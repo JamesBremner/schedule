@@ -43,9 +43,17 @@ int main()
 {
 
     cSchedule S = ConstructTestSchedule1();
-    //cout << S.json() << "\n";
     cShop Shop( S );
     Shop.Manufacture( S );
     cout << S.json() << "\n";
+    if( S.FindStep( 0 ).Start() != 0 )
+        cout << "step 0 failed\n";
+    if( S.FindStep( 1 ).Start() != 10 )
+        cout << "step 1 failed\n";
+    if( S.FindStep( 2 ).Start() != 10 )
+        cout << "step 2 failed\n";
+    if( S.FindStep( 3 ).Start() != 11 )
+        cout << "step 3 failed\n";
+
     return 0;
 }
