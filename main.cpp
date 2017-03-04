@@ -14,31 +14,25 @@ cSchedule ConstructTestSchedule1()
 
     cJob J("A-B",0);
 
-    int IDprev;
-
-    IDprev = J.Add( cStep(
-                        "A",
-                        "A",
-                        10,
-                        -99 ) );
-    IDprev = J.Add( cStep(
-                        "B",
-                        "B",
-                        2,
-                        IDprev) );
+    J.Add( cStep(
+               "A",
+               "A",
+               10) );
+    J.Add( cStep(
+               "B",
+               "B",
+               2) );
     S.Add( J );
 
     cJob J2("A-C",0);
-    IDprev = J2.Add( cStep(
-                         "A",
-                         "A",
-                         1,
-                         -99) );
-    IDprev = J2.Add( cStep(
-                         "C",
-                         "C",
-                         20,
-                         IDprev) );
+    J2.Add( cStep(
+                "A",
+                "A",
+                1) );
+    J2.Add( cStep(
+                "C",
+                "C",
+                20) );
     S.Add( J2 );
 
     return S;

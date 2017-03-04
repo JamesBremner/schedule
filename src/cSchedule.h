@@ -4,17 +4,26 @@
 
 using namespace std;
 
+/** A single processing step: the time a job spends on a nachine */
 class cStep
 {
 public:
-    cStep( string name, string machine, float time, int previous );
 
+    /** CTOR
+        @param[in] name of step
+        @param[in] machine name of machine
+        @param[in] time spent o machine
+    */
+    cStep( string name, string machine, float time );
+
+    /** CTOR of null step */
     cStep()
     : myID( -99 )
     {
 
     }
 
+    /** Output the step in JSON format */
     json::Object json();
 
     string Machine()
@@ -48,6 +57,13 @@ public:
     {
         return myPrevious;
     }
+    void Previous( int id )
+    {
+        myPrevious = id;
+    }
+
+
+    /** time when step will be completed */
     float Finish()
     {
         return myStart + myTime;
@@ -62,6 +78,7 @@ private:
     static int LastID;
 };
 
+/** Processing steps that must be done in sequence */
 class cJob
 {
 public:
@@ -71,15 +88,17 @@ public:
     {
 
     }
-    int Add( const cStep& step )
-    {
-        myStep.push_back( step );
-        return step.ID();
-    }
 
+    /** Add next step in job */
+    int Add( const cStep& step );
+
+    /** Jon in JSON format */
     json::Object json();
+
+    /** All the steps in a job, copied into a vector */
     void Steps( vector< cStep >& vStep ) ;
 
+    /** Find step with id */
      cStep& FindStep( int id );
 
 private:
@@ -96,6 +115,8 @@ public:
         myJob.push_back( job );
     }
     string json();
+
+     /** All the steps in a schedule, copied into a vector */
     void Steps( vector< cStep >& vStep );
 
     cStep& FindStep( int id );

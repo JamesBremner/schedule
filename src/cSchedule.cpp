@@ -7,11 +7,10 @@ int cStep::LastID = -1;
 
 using namespace std;
 
-    cStep::cStep( string name, string machine, float time, int previous )
+    cStep::cStep( string name, string machine, float time )
         : myName( name )
         , myMachine( machine )
         , myTime( time )
-        , myPrevious( previous )
         , myStart( -1 )
     {
         myID = ++LastID;
@@ -45,6 +44,16 @@ json::Object cJob::json()
     return j;
 
 }
+
+    int cJob::Add( const cStep& step )
+    {
+        int previous = -99;
+        if( myStep.size() > 0 )
+            previous = myStep.back().ID();
+        myStep.push_back( step );
+        myStep.back().Previous( previous );
+        return step.ID();
+    }
 
 void cJob::Steps( vector< cStep >& vStep )
 {
