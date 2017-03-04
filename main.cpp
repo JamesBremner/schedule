@@ -8,41 +8,29 @@
 using namespace std;
 
 
-cSchedule ConstructTestSchedule1()
+void ConstructTestSchedule1()
 {
     cSchedule S;
 
     cJob J("A-B",0);
 
-    J.Add( cStep(
-               "A",
-               "A",
-               10) );
-    J.Add( cStep(
-               "B",
-               "B",
-               2) );
+    J.Add(
+        "A",
+        10) ;
+    J.Add(
+        "B",
+        2 );
     S.Add( J );
 
     cJob J2("A-C",0);
-    J2.Add( cStep(
-                "A",
-                "A",
-                1) );
-    J2.Add( cStep(
-                "C",
-                "C",
-                20) );
+    J2.Add(
+        "A",
+        1 );
+    J2.Add(
+        "C",
+        20 );
     S.Add( J2 );
 
-    return S;
-}
-
-
-int main()
-{
-
-    cSchedule S = ConstructTestSchedule1();
     cShop Shop( S );
     Shop.Manufacture( S );
     cout << S.json() << "\n";
@@ -54,6 +42,14 @@ int main()
         cout << "step 2 failed\n";
     if( S.FindStep( 3 ).Start() != 11 )
         cout << "step 3 failed\n";
+
+}
+
+
+int main()
+{
+
+    ConstructTestSchedule1();
 
     return 0;
 }

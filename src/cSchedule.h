@@ -89,10 +89,14 @@ public:
 
     }
 
-    /** Add next step in job */
-    int Add( const cStep& step );
+    /** Add next step in job
+        @param[in] machine name
+        @param[in] time needed on machine
+    */
+    void Add( const string& machine,
+            float time );
 
-    /** Jon in JSON format */
+    /** Job in JSON format */
     json::Object json();
 
     /** All the steps in a job, copied into a vector */
@@ -114,11 +118,14 @@ public:
     {
         myJob.push_back( job );
     }
+
+    /** Schedule in JSON format */
     string json();
 
      /** All the steps in a schedule, copied into a vector */
     void Steps( vector< cStep >& vStep );
 
+    /** Find step from ID */
     cStep& FindStep( int id );
 
 private:

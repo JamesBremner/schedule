@@ -7,28 +7,28 @@ int cStep::LastID = -1;
 
 using namespace std;
 
-    cStep::cStep( string name, string machine, float time )
-        : myName( name )
-        , myMachine( machine )
-        , myTime( time )
-        , myStart( -1 )
-    {
-        myID = ++LastID;
-        LastID = myID;
-    }
+cStep::cStep( string name, string machine, float time )
+    : myName( name )
+    , myMachine( machine )
+    , myTime( time )
+    , myStart( -1 )
+{
+    myID = ++LastID;
+    LastID = myID;
+}
 
 
 
- json::Object cStep::json()
- {
-     json::Object j;
-     j["name"] = myName;
-     j["machine"] = myMachine;
-     j["time"] = myTime;
-     j["previous"] = myPrevious;
-     j["start"] = myStart;
-     return j;
- }
+json::Object cStep::json()
+{
+    json::Object j;
+    j["name"] = myName;
+    j["machine"] = myMachine;
+    j["time"] = myTime;
+    j["previous"] = myPrevious;
+    j["start"] = myStart;
+    return j;
+}
 
 json::Object cJob::json()
 {
@@ -45,15 +45,16 @@ json::Object cJob::json()
 
 }
 
-    int cJob::Add( const cStep& step )
-    {
-        int previous = -99;
-        if( myStep.size() > 0 )
-            previous = myStep.back().ID();
-        myStep.push_back( step );
-        myStep.back().Previous( previous );
-        return step.ID();
-    }
+void cJob::Add(
+    const string& machine,
+    float time )
+{
+    int previous = -99;
+    if( myStep.size() > 0 )
+        previous = myStep.back().ID();
+    myStep.push_back( cStep( "", machine, time ) );
+    myStep.back().Previous( previous );
+}
 
 void cJob::Steps( vector< cStep >& vStep )
 {
@@ -74,33 +75,33 @@ string cSchedule::json()
     return json::Serialize( s );
 }
 
- void cSchedule::Steps( vector< cStep >& vStep )
- {
-     vStep.clear();
-     for( auto& j : myJob )
-     {
-         j.Steps( vStep );
-     }
- }
- cStep& cSchedule::FindStep( int id )
- {
-     for( auto& j : myJob )
-     {
-         cStep& s = j.FindStep( id );
-         if( ! s.IsNull() )
+void cSchedule::Steps( vector< cStep >& vStep )
+{
+    vStep.clear();
+    for( auto& j : myJob )
+    {
+        j.Steps( vStep );
+    }
+}
+cStep& cSchedule::FindStep( int id )
+{
+    for( auto& j : myJob )
+    {
+        cStep& s = j.FindStep( id );
+        if( ! s.IsNull() )
             return s;
-     }
-     static cStep null;
-     return null;
- }
+    }
+    static cStep null;
+    return null;
+}
 
- cStep& cJob::FindStep( int id )
- {
-     for( auto& s : myStep )
-     {
+cStep& cJob::FindStep( int id )
+{
+    for( auto& s : myStep )
+    {
         if( s.ID() == id )
             return s;
-     }
-     static cStep null;
-     return null;
- }
+    }
+    static cStep null;
+    return null;
+}
