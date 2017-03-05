@@ -105,3 +105,16 @@ cStep& cJob::FindStep( int id )
     static cStep null;
     return null;
 }
+
+void cSchedule::Add( cJob& job )
+{
+    // check that all jobs have the same type
+    if( myJob.size() )
+    {
+        if( job.Type() != myJob.back().Type() )
+            throw std::runtime_error(
+                "All jobs must have same type");
+    }
+
+    myJob.push_back( job );
+}

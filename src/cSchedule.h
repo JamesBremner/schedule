@@ -60,6 +60,10 @@ public:
     {
         return myTime;
     }
+    void Time( float t )
+    {
+        myTime = t;
+    }
 
     /** Start time of step on machine */
     float Start()
@@ -123,9 +127,18 @@ private:
 class cJob
 {
 public:
-    cJob( string name, float earliest )
+
+    enum class eType
+    {
+        none,
+        sequential,     // all steps must be completed in order
+        anyone          // any one step can be done
+    };
+
+    cJob( const string& name,
+          eType type )
         : myName( name )
-        , myEarliestStart( earliest )
+        , myType( type )
     {
 
     }
@@ -146,19 +159,37 @@ public:
     /** Find step with id */
     cStep& FindStep( int id );
 
+    eType Type()
+    {
+        return myType;
+    }
+
+    string Name()
+    {
+        return myName;
+    }
+
+    vector< cStep >::iterator begin()
+    {
+        return myStep.begin();
+    }
+    vector< cStep >::iterator end()
+    {
+        return myStep.end();
+    }
+
 private:
     string myName;
     vector< cStep > myStep;
     float myEarliestStart;
+    eType myType;
 };
 
 class cSchedule
 {
 public:
-    void Add( cJob& job )
-    {
-        myJob.push_back( job );
-    }
+
+    void Add( cJob& job );
 
     /** Schedule in JSON format */
     string json();
@@ -169,6 +200,26 @@ public:
     /** Find step from ID */
     cStep& FindStep( int id );
 
+    cJob::eType Type()
+    {
+        if( ! myJob.size() )
+            return cJob::eType::none;
+        return myJob[0].Type();
+    }
+
+    int CountJobs()
+    {
+        return (int) myJob.size();
+    }
+
+    vector< cJob >::iterator begin()
+    {
+        return myJob.begin();
+    }
+    vector< cJob >::iterator end()
+    {
+        return myJob.end();
+    }
 private:
     vector<cJob> myJob;
 };
