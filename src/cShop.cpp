@@ -41,10 +41,12 @@ void cShop::Manufacture( cSchedule& S )
         float start = 0;
         if( s.Previous() >= 0 )
         {
+            // wait for previous step to complete
             start = S.FindStep( s.Previous() ).Finish();
         }
         if( it->BusyUntil() > start )
         {
+            // wait for machine to become free
             start = it->BusyUntil();
         }
 
