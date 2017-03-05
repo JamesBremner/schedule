@@ -35,6 +35,15 @@ json::Object cJob::json()
     json::Object j;
     j["name"] = myName;
     j["earliest"] = myEarliestStart;
+    switch( myType )
+    {
+    case eType::sequential:
+        j["type"] = "squential";
+        break;
+    case eType::anyone:
+        j["type"] = "anyone";
+        break;
+    }
     json::Array steps;
     for( auto& s : myStep )
     {
