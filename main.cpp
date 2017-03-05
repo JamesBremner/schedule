@@ -47,8 +47,10 @@ void TestSchedule1()
 
 void TestSchedule2()
 {
-    cSchedule S;
+    // Set up sample problem described in
+    // https://en.wikipedia.org/wiki/Hungarian_algorithm
 
+    cSchedule S;
 
     cJob J("Armond", cJob::eType::anyone );
     J.Add(
@@ -88,9 +90,11 @@ void TestSchedule2()
 
 
     cShop Shop( S );
-    Shop.Manufacture( S );
+    float cost = Shop.Manufacture( S );
     cout << S.json() << "\n";
 
+    if( cost != 6 )
+        cout << "Failed to optimize cost\n";
     if( S.begin()->begin()->Start() != 1 )
         cout << "FAILED 1 " << S.begin()->begin()->Start() << "\n";
     if( ((S.begin()+1)->begin()+1)->Start() != 1 )
@@ -103,12 +107,100 @@ void TestSchedule2()
 
 
 
+void TestSchedule3()
+{
+    // Set up sample problem described in
+    // https://en.wikipedia.org/wiki/Hungarian_algorithm
+
+    cSchedule S;
+
+    cJob J("Armond", cJob::eType::anyone );
+    J.Add(
+        "Clean",
+        2) ;
+    J.Add(
+        "Sweep",
+        3 );
+    J.Add(
+        "Wash",
+        3 );
+    J.Add(
+        "Mend",
+        3 );
+    S.Add( J );
+
+    cJob J2("Francine", cJob::eType::anyone );
+    J2.Add(
+        "Clean",
+        3 ) ;
+    J2.Add(
+        "Sweep",
+        2 );
+    J2.Add(
+        "Wash",
+        3 );
+    J2.Add(
+        "Mend",
+        3 );
+
+    S.Add( J2 );
+
+    cJob J3("Herbert", cJob::eType::anyone );
+    J3.Add(
+        "Clean",
+        3) ;
+    J3.Add(
+        "Sweep",
+        3 );
+    J3.Add(
+        "Wash",
+        2 );
+    J3.Add(
+        "Mend",
+        3 );
+
+    S.Add( J3 );
+
+    cJob J4("Xavier", cJob::eType::anyone );
+    J4.Add(
+        "Clean",
+        3) ;
+    J4.Add(
+        "Sweep",
+        3 );
+    J4.Add(
+        "Wash",
+        2 );
+    J4.Add(
+        "Mend",
+        3 );
+
+    S.Add( J4 );
+
+    cShop Shop( S );
+    float cost = Shop.Manufacture( S );
+    cout << S.json() << "\n";
+
+    if( cost != 9 )
+        cout << "Failed to optimize cost\n";
+    if( S.begin()->begin()->Start() != 1 )
+        cout << "FAILED 1 " << S.begin()->begin()->Start() << "\n";
+    if( ((S.begin()+1)->begin()+1)->Start() != 1 )
+        cout << "FAILED 2 " << "\n";
+    if( ((S.begin()+2)->begin()+2)->Start() != 1 )
+        cout << "FAILED 3 " << "\n";
+
+
+}
+
+
 int main()
 {
 
 
     TestSchedule1();
     TestSchedule2();
+    TestSchedule3();
 
     return 0;
 }

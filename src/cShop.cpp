@@ -25,81 +25,230 @@ cShop::cShop( cSchedule& S )
     }
 }
 
-void cShop::Manufacture( cSchedule& S )
+float cShop::Manufacture( cSchedule& S )
 {
     switch( S.Type() )
     {
     case cJob::eType::sequential:
         ManufactureSequential( S );
+        return 0;
         break;
     case cJob::eType::anyone:
-        Hungarian( S );
+        return Hungarian( S );
         break;
     default:
+        return 0;
         break;
     }
 }
 
-void cShop::Hungarian( cSchedule& S )
+class cHungarianCostMatrix
 {
-    cout << "Hungarian NYI\n";
+public:
+    cHungarianCostMatrix( cSchedule& S )
+        : myS ( S )
+    {
+        N = S.CountJobs();
 
-    ////// step 1
+        for( auto& worker : S )
+        {
+            for( auto& task : worker )
+            {
+                M.push_back( task );
+            }
+        }
+    }
+
+    void SubtractRowMinimums()
+    {
+        for( int row = 0; row < N; row++ )
+        {
+            float min = M[ N * row ].Time();
+
+            for( int col = 0; col < N; col++ )
+            {
+                float cost = M[ N * row + col ].Time();
+                if( cost < min )
+                {
+                    min = cost;
+                }
+            }
+            for( int col = 0; col < N; col++ )
+            {
+                int offset = N * row + col;
+                M[ offset ].Time(
+                    M[ offset ].Time() - min );
+
+            }
+        }
+    }
+
+    void SubtractColMinimums()
+    {
+        for( int col = 0; col < N; col++ )
+        {
+            float min = M[ col ].Time();
+
+            for( int row = 0; row < N; row++ )
+            {
+                float cost = M[ N * row + col ].Time();
+                if( cost < min )
+                {
+                    min = cost;
+                }
+            }
+            for( int row = 0; row < N; row++ )
+            {
+                int offset = N * row + col;
+                M[ offset ].Time(
+                    M[ offset ].Time() - min );
+
+            }
+        }
+    }
+
+    bool IsZeroInEveryColumn()
+    {
+        bool foundZero;
+        for( int col = 0; col < N; col++ )
+        {
+            foundZero = false;
+            for( int row = 0; row < N; row++ )
+            {
+                if( M[ N * row + col ].Time() == 0 )
+                {
+                    foundZero = true;
+                    break;
+                }
+            }
+            if( ! foundZero )
+                break;
+        }
+        return foundZero;
+    }
+
+    void AssignWorkerToCheapestTask()
+    {
+        for( int row = 0; row < N; row++ )
+        {
+            for( int col = 0; col < N; col++ )
+            {
+                if( M[  N * row + col ].Time() == 0 )
+                {
+                    // assign worker to task
+                    Assign( row, col );
+                }
+            }
+        }
+    }
+
+    void Step3()
+    {
+        int CountTasksAssigned = 0;
+        for( int row = 0; row < N; row++ )
+        {
+            int CountZerosInRow = 0;
+            for( int col = 0; col < N; col++ )
+            {
+                if( M[ N * row + col ].Time() == 0 )
+                {
+                    CountZerosInRow++;
+                }
+            }
+            if( CountZerosInRow > 0  )
+            {
+                for( int col = 0; col < N; col++ )
+                {
+                    if( M[ N * row + col ].Time() == 0 )
+                    {
+                        // assign worker to task
+                        CountTasksAssigned++;
+                        Assign( row, col );
+
+                        // cross out any other zeros in column
+                        for( int r = row+1; r < N; r++ )
+                        {
+                            if(  M[ N * r + col ].Time() == 0 )
+                            {
+                                M[ N * r + col ].Time( -99 );
+                            }
+                        }
+                        // cross out any other zeros in row
+                        for( int c = col+1; c < N; c++ )
+                        {
+                            if(  M[ N * row + c ].Time() == 0 )
+                            {
+                                M[ N * row + c ].Time( -99 );
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        if( CountTasksAssigned != N )
+            throw std::runtime_error("Hungarian step 3 failed");
+    }
+
+    void Assign( int worker, int task )
+    {
+        myS.FindStep( M[  N * worker + task ].ID() ).Start( 1 );
+        cout << (myS.begin()+worker)->Name() <<"->"
+             << M[  N * worker + task ].Machine() <<"\n";
+    }
+
+    float CountCost()
+    {
+        float Cost = 0;
+        vector< cStep > vstep;
+        myS.Steps( vstep );
+        for( auto& s : vstep )
+        {
+            if( s.Start() == 1 )
+                Cost += s.Time();
+        }
+        cout << "Total Cost " << Cost << "\n";
+        return Cost;
+    }
+
+    void Print()
+    {
+        for( int row = 0; row < N; row++ )
+        {
+            for( int col = 0; col < N; col++ )
+            {
+                cout << M[ N * row + col ].Time();
+            }
+            cout << "\n";
+        }
+    }
+
+    cSchedule& myS;
+    int N;
+    vector< cStep > M;
+};
+
+float cShop::Hungarian( cSchedule& S )
+{
 
     // ensure workers = tasks
     if( (int)myMachine.size() != S.CountJobs() )
         throw std::runtime_error(
             "Hungarian algorithm needs same number of workers and tasks");
 
-    // construct cost matrix
-    // assume tasks are specified in same order for every worker
-    vector< cStep > cost_matrix;
-
-    for( auto& worker : S )
+    cHungarianCostMatrix H( S );
+    H.SubtractRowMinimums();
+    if( H.IsZeroInEveryColumn() )
     {
-        for( auto& task : worker )
-        {
-            cost_matrix.push_back( task );
-        }
+        H.AssignWorkerToCheapestTask();
     }
-
-    // subtract row minumums
-
-    for( int row = 0; row < (int)myMachine.size(); row++ )
+    else
     {
-        float min = cost_matrix[ myMachine.size() * row ].Time();
-
-        for( int col = 0; col < (int)myMachine.size(); col++ )
-        {
-            float cost = cost_matrix[ myMachine.size() * row + col ].Time();
-            if( cost < min )
-            {
-                min = cost;
-            }
-        }
-        for( int col = 0; col < (int)myMachine.size(); col++ )
-        {
-            int offset = myMachine.size() * row + col;
-            cost_matrix[ offset ].Time(
-                cost_matrix[ offset ].Time() - min );
-
-        }
+        H.SubtractColMinimums();
+        H.Step3();
     }
+    return H.CountCost();
 
-    for( int row = 0; row < (int)myMachine.size(); row++ )
-    {
-        for( int col = 0; col < (int)myMachine.size(); col++ )
-        {
-            if( cost_matrix[  myMachine.size() * row + col ].Time() == 0 )
-            {
-                // assign worker to task
-                S.FindStep( cost_matrix[  myMachine.size() * row + col ].ID() ).Start( 1 );
-
-                cout << (S.begin()+row)->Name() <<"->"
-                    << cost_matrix[  myMachine.size() * row + col ].Machine() <<"\n";
-            }
-        }
-    }
 }
 void cShop::ManufactureSequential( cSchedule& S )
 {
