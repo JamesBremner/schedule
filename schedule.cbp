@@ -40,8 +40,9 @@
 		<Unit filename="src/cSchedule.h" />
 		<Unit filename="src/cShop.cpp" />
 		<Unit filename="src/cShop.h" />
-		<Unit filename="src/ext/json.cpp" />
-		<Unit filename="src/ext/json.h" />
+		<Unit filename="src/ext/json.hpp" />
+		<Unit filename="src/ext/nlohmann_json.cpp" />
+		<Unit filename="src/ext/nlohmann_json.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

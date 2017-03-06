@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "json.h"
+
+#include "nlohmann_json.hpp"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ public:
     }
 
     /** Output the step in JSON format */
-    json::Object json();
+    nlohmann::json json();
 
     /** Name of machine used to process step */
     string Machine() const
@@ -156,7 +157,7 @@ public:
               float time );
 
     /** Job in JSON format */
-    json::Object json();
+     nlohmann::json json();
 
     /** Steps in the job
         @return new vector containing steps in this job

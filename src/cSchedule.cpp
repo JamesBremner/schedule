@@ -19,9 +19,9 @@ cStep::cStep( string name, string machine, float time )
 
 
 
-json::Object cStep::json()
+nlohmann::json cStep::json()
 {
-    json::Object j;
+    nlohmann::json j;
     j["name"] = myName;
     j["machine"] = myMachine;
     j["time"] = myTime;
@@ -30,9 +30,9 @@ json::Object cStep::json()
     return j;
 }
 
-json::Object cJob::json()
+nlohmann::json cJob::json()
 {
-    json::Object j;
+    nlohmann::json j;
     j["name"] = myName;
     j["earliest"] = myEarliestStart;
     switch( myType )
@@ -44,7 +44,7 @@ json::Object cJob::json()
         j["type"] = "anyone";
         break;
     }
-    json::Array steps;
+    nlohmann::json steps;
     for( auto& s : myStep )
     {
         steps.push_back( s.json() );
@@ -80,16 +80,21 @@ void cJob::AddSteps( vector< cStep >& vStep )
         vStep.push_back( s );
     }
 }
+
+
 string cSchedule::json()
 {
-    json::Object s;
-    json::Array ja;
+
+    nlohmann::json s;
+    nlohmann::json ja;
     for( auto& j : myJob )
     {
         ja.push_back( j.json() );
     }
     s["jobs"] = ja;
-    return json::Serialize( s );
+    string ret;
+    ret = s.dump();
+    return ret;
 }
 
 void cSchedule::Steps( vector< cStep >& vStep )
