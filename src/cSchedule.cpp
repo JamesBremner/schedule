@@ -64,8 +64,16 @@ void cJob::Add(
     myStep.push_back( cStep( "", machine, time ) );
     myStep.back().Previous( previous );
 }
-
-void cJob::Steps( vector< cStep >& vStep )
+vector< cStep > cJob::Steps()
+{
+    vector< cStep > vs;
+    for( auto& s : myStep )
+    {
+        vs.push_back( s );
+    }
+    return vs;
+}
+void cJob::AddSteps( vector< cStep >& vStep )
 {
     for( auto& s : myStep )
     {
@@ -89,7 +97,7 @@ void cSchedule::Steps( vector< cStep >& vStep )
     vStep.clear();
     for( auto& j : myJob )
     {
-        j.Steps( vStep );
+        j.AddSteps( vStep );
     }
 }
 cStep& cSchedule::FindStep( int id )

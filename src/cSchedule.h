@@ -51,7 +51,7 @@ public:
     json::Object json();
 
     /** Name of machine used to process step */
-    string Machine()
+    string Machine() const
     {
         return myMachine;
     }
@@ -113,6 +113,11 @@ public:
         return myStart + myTime;
     }
 
+    void Print()
+    {
+        cout << myMachine << " ";
+    }
+
 private:
     string myName;
     string myMachine;
@@ -153,8 +158,21 @@ public:
     /** Job in JSON format */
     json::Object json();
 
-    /** All the steps in a job, copied into a vector */
-    void Steps( vector< cStep >& vStep ) ;
+    /** Steps in the job
+        @return new vector containing steps in this job
+
+        These are copies of the steps in the job,
+        with the same ID as the originals
+    */
+    vector< cStep > Steps();
+
+    /** All the steps in a job, copies added to a vector */
+    void AddSteps( vector< cStep >& vStep ) ;
+
+    void SetSteps( vector< cStep >& vStep )
+    {
+        myStep = vStep;
+    }
 
     /** Find step with id */
     cStep& FindStep( int id );

@@ -2,7 +2,8 @@
 #include <vector>
 #include <set>
 #include <cstdlib>
-
+#include <cfloat>
+#include <algorithm>
 
 #include "cSchedule.h"
 #include "cShop.h"
@@ -45,9 +46,14 @@ float cShop::Manufacture( cSchedule& S )
 class cHungarianCostMatrix
 {
 public:
-    cHungarianCostMatrix( cSchedule& S )
+    cHungarianCostMatrix( cSchedule& S, cShop& shop )
         : myS ( S )
+        , myShop( shop )
     {
+        // Ensure all jobs have steps for every machine in machine order
+        // arranged in the same, alphabetical order
+        AddMissingSteps();
+
         N = S.CountJobs();
 
         for( auto& worker : S )
@@ -144,6 +150,9 @@ public:
 
     void Step3()
     {
+        cout << "step3\n";
+        Print();
+
         int CountTasksAssigned = 0;
         for( int row = 0; row < N; row++ )
         {
@@ -211,6 +220,46 @@ public:
         return Cost;
     }
 
+    void AddMissingSteps()
+    {
+
+        for( auto& job : myS )
+        {
+            vector< cStep > vStep;
+            vector< cStep > vNew;
+            job.AddSteps( vStep );
+
+            for( auto& s : vStep )
+                s.Print();
+                cout << "\n";
+
+            for( auto& machine : myShop )
+            {
+
+                auto sit = find_if( vStep.begin(),
+                                    vStep.end(),
+                                    [&]( const cStep& s )
+                {
+                    return ( s.Machine() == machine.Name() );
+                });
+                if( sit == vStep.end() )
+                {
+                    // the job had no step specify the cost of running on this machine
+                    // so add one with a huge cost
+                    vNew.push_back( cStep("",machine.Name(),FLT_MAX ));
+                }
+                else
+                {
+                    vNew.push_back( *sit );
+                }
+            }
+            for( auto& s : vNew )
+                s.Print();
+                cout << "\n";
+            job.SetSteps( vNew );
+        }
+    }
+
     void Print()
     {
         for( int row = 0; row < N; row++ )
@@ -222,8 +271,9 @@ public:
             cout << "\n";
         }
     }
-
+private:
     cSchedule& myS;
+    cShop& myShop;
     int N;
     vector< cStep > M;
 };
@@ -236,7 +286,7 @@ float cShop::Hungarian( cSchedule& S )
         throw std::runtime_error(
             "Hungarian algorithm needs same number of workers and tasks");
 
-    cHungarianCostMatrix H( S );
+    cHungarianCostMatrix H( S, *this );
     H.SubtractRowMinimums();
     if( H.IsZeroInEveryColumn() )
     {

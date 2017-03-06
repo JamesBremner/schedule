@@ -124,9 +124,9 @@ void TestSchedule3()
     J.Add(
         "Wash",
         3 );
-    J.Add(
-        "Mend",
-        3 );
+//    J.Add(
+//        "Mend",
+//        3 );
     S.Add( J );
 
     cJob J2("Francine", cJob::eType::anyone );
@@ -139,9 +139,9 @@ void TestSchedule3()
     J2.Add(
         "Wash",
         3 );
-    J2.Add(
-        "Mend",
-        3 );
+//    J2.Add(
+//        "Mend",
+//        3 );
 
     S.Add( J2 );
 
@@ -155,24 +155,24 @@ void TestSchedule3()
     J3.Add(
         "Wash",
         2 );
-    J3.Add(
-        "Mend",
-        3 );
+//    J3.Add(
+//        "Mend",
+//        3 );
 
     S.Add( J3 );
 
     cJob J4("Xavier", cJob::eType::anyone );
+//    J4.Add(
+//        "Clean",
+//        3) ;
+//    J4.Add(
+//        "Sweep",
+//        3 );
+//    J4.Add(
+//        "Wash",
+//        2 );
     J4.Add(
-        "Clean",
-        3) ;
-    J4.Add(
-        "Sweep",
-        3 );
-    J4.Add(
-        "Wash",
-        2 );
-    J4.Add(
-        "Mend",
+        "XMend",
         3 );
 
     S.Add( J4 );
