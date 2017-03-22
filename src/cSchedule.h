@@ -67,7 +67,7 @@ public:
     }
 
     /** Start time of step on machine */
-    float Start()
+    float Start() const
     {
         return myStart;
     }
@@ -114,14 +114,31 @@ public:
         return myStart + myTime;
     }
 
+    void Job( const string& name )
+    {
+        myJob = name;
+    }
+    string Job() const
+    {
+        return myJob;
+    }
+
+    bool operator<( const cStep& other) const
+    {
+        return myStart < other.myStart;
+    }
+
     void Print()
     {
         cout << myMachine << " ";
     }
 
+
+
 private:
     string myName;
     string myMachine;
+    string myJob;
     float myTime;
     int myPrevious;
     float myStart;
@@ -249,6 +266,9 @@ public:
     {
         return (int) myJob.size();
     }
+
+    void Assignments( set< cStep >& assigns );
+
 
     vector< cJob >::iterator begin()
     {

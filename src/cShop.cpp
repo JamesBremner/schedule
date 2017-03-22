@@ -64,7 +64,7 @@ void cShop::ManufactureAnyone( cSchedule& S )
     // for each start time
     for( auto startTime : vStartTimes )
     {
-        cout << "start time " << startTime << "\n";
+        //cout << "start time " << startTime << "\n";
 
         // loop over jobs
         for( auto& job : S )
@@ -93,7 +93,7 @@ void cShop::ManufactureAnyone( cSchedule& S )
                     job.FindStep( machine.Name() ),
                     startTime );
 
-                cout <<machine.Name() << " to " << job.Name() << "\n";
+                cout <<machine.Name() << " to " << job.Name() << " at " << startTime <<"\n";
 
                 break;
             }

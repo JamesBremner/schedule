@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include "cSchedule.h"
 
@@ -116,6 +117,20 @@ cStep& cSchedule::FindStep( int id )
     }
     static cStep null;
     return null;
+}
+
+void cSchedule::Assignments( set< cStep >& assigns )
+{
+    for( auto& job : myJob )
+    {
+        for( auto& step : job )
+        {
+            if( step.Start() >= 0 ) {
+                step.Job( job.Name() );
+                assigns.insert( step );
+            }
+        }
+    }
 }
 
 cStep& cJob::FindStep( int id )
