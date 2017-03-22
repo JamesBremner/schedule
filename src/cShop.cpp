@@ -10,10 +10,10 @@
 
 using namespace std;
 
-void cMachine::Add( cStep& step )
+void cMachine::Add( cStep& step, float time )
 {
-    step.Start( myBusyUntil );
-    myBusyUntil += step.Time();
+    step.Start( time );
+    myBusyUntil = time + step.Time();
 }
 
 cShop::cShop( cSchedule& S )
@@ -22,7 +22,7 @@ cShop::cShop( cSchedule& S )
     S.Steps(  vStep  );
     for ( auto& s : vStep )
     {
-        myMachine.insert( cMachine( s.Machine() ));
+        myMachine.insert( make_pair( s.Machine(), cMachine( s.Machine() )));
     }
 }
 
@@ -34,13 +34,72 @@ float cShop::Manufacture( cSchedule& S )
         ManufactureSequential( S );
         return 0;
         break;
+
     case cJob::eType::anyone:
-        return Hungarian( S );
+        if( (int)myMachine.size() == S.CountJobs() )
+        {
+            // the number of jobs matches the number of machines
+            // so we can use the Hungarian algorithm
+            return Hungarian( S );
+        }
+        ManufactureAnyone( S );
+        return 0;
         break;
     default:
         return 0;
         break;
     }
+}
+
+void cShop::ManufactureAnyone( cSchedule& S )
+{
+    // create vector of job start times in chronological order
+    std::vector< float > vStartTimes;
+    for( auto& job : S )
+    {
+        vStartTimes.push_back( job.EarliestStart() );
+    }
+    sort( vStartTimes.begin(), vStartTimes.end() );
+
+    // for each start time
+    for( auto startTime : vStartTimes )
+    {
+        cout << "start time " << startTime << "\n";
+
+        // loop over jobs
+        for( auto& job : S )
+        {
+            // check if job is ready to start
+            if( job.EarliestStart() != startTime )
+                continue;
+
+            // check if job still needs to be assigned
+            if( job.IsAnyoneAssigned() )
+                continue;
+
+            //cout << "Assigning job " << job.Name() << "\n";
+
+            // loop over machines
+            for( auto& it : myMachine )
+            {
+                cMachine& machine = it.second;
+
+                // check if machine is free
+                if( machine.BusyUntil() > startTime + 0.01 )
+                    continue;
+
+                // assign job to machine
+                machine.Add(
+                    job.FindStep( machine.Name() ),
+                    startTime );
+
+                cout <<machine.Name() << " to " << job.Name() << "\n";
+
+                break;
+            }
+        }
+    }
+
 }
 
 class cHungarianCostMatrix
@@ -201,7 +260,10 @@ public:
 
     void Assign( int worker, int task )
     {
-        myS.FindStep( M[  N * worker + task ].ID() ).Start( 1 );
+        auto& step = myS.FindStep( M[  N * worker + task ].ID() );
+        step.Start( 1 );
+        //auto& machine = myShop.find( step.Machine() );
+        //machine.Add( step );
         cout << (myS.begin()+worker)->Name() <<"->"
              << M[  N * worker + task ].Machine() <<"\n";
     }
@@ -231,11 +293,11 @@ public:
 
             for( auto& s : vStep )
                 s.Print();
-                cout << "\n";
+            cout << "\n";
 
-            for( auto& machine : myShop )
+            for( auto machine_map_it : myShop )
             {
-
+                cMachine& machine = machine_map_it.second;
                 auto sit = find_if( vStep.begin(),
                                     vStep.end(),
                                     [&]( const cStep& s )
@@ -255,7 +317,7 @@ public:
             }
             for( auto& s : vNew )
                 s.Print();
-                cout << "\n";
+            cout << "\n";
             job.SetSteps( vNew );
         }
     }
@@ -309,10 +371,11 @@ void cShop::ManufactureSequential( cSchedule& S )
     {
 
         // find machine required by step
-        std::set<cMachine>::iterator it;
-        it = myMachine.find( cMachine( s.Machine() ));
+        std::map<string,cMachine>::iterator it;
+        it = myMachine.find( s.Machine() );
         if( it == myMachine.end() )
             continue;
+        cMachine& machine = it->second;
 
         // calculate earliest job can start
         float start = 0;
@@ -321,17 +384,15 @@ void cShop::ManufactureSequential( cSchedule& S )
             // wait for previous step to complete
             start = S.FindStep( s.Previous() ).Finish();
         }
-        if( it->BusyUntil() > start )
+        if( machine.BusyUntil() > start )
         {
             // wait for machine to become free
-            start = it->BusyUntil();
+            start = machine.BusyUntil();
         }
 
         // add step to machine
-        cMachine M( *it );
-        M.Add( s );
-        myMachine.erase( it );
-        myMachine.insert( M );
+        machine.Add( s, start );
+
 
         // set step start time
         S.FindStep( s.ID() ).Start( start );

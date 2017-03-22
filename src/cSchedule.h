@@ -145,8 +145,18 @@ public:
           eType type )
         : myName( name )
         , myType( type )
+        , myEarliestStart( 0 )
     {
 
+    }
+
+    void Name( const string& name )
+    {
+        myName = name;
+    }
+    void EarlistStart( float t )
+    {
+        myEarliestStart = t;
     }
 
     /** Add next step in job
@@ -178,9 +188,18 @@ public:
     /** Find step with id */
     cStep& FindStep( int id );
 
+    /** Find step with machine name */
+    cStep& FindStep( const string& machineName );
+
+    bool IsAnyoneAssigned();
+
     eType Type()
     {
         return myType;
+    }
+    float EarliestStart() const
+    {
+        return myEarliestStart;
     }
 
     string Name()
@@ -211,7 +230,7 @@ public:
     void Add( cJob& job );
 
     /** Schedule in JSON format */
-    string json();
+    nlohmann::json json();
 
     /** All the steps in a schedule, copied into a vector */
     void Steps( vector< cStep >& vStep );

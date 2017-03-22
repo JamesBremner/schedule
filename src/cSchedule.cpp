@@ -82,7 +82,7 @@ void cJob::AddSteps( vector< cStep >& vStep )
 }
 
 
-string cSchedule::json()
+nlohmann::json cSchedule::json()
 {
 
     nlohmann::json s;
@@ -92,9 +92,10 @@ string cSchedule::json()
         ja.push_back( j.json() );
     }
     s["jobs"] = ja;
-    string ret;
-    ret = s.dump();
-    return ret;
+
+    return s;
+
+
 }
 
 void cSchedule::Steps( vector< cStep >& vStep )
@@ -126,6 +127,29 @@ cStep& cJob::FindStep( int id )
     }
     static cStep null;
     return null;
+}
+
+cStep& cJob::FindStep( const string& machineName )
+{
+    for( auto& s : myStep )
+    {
+        if( s.Machine() == machineName )
+            return s;
+    }
+    static cStep null;
+    return null;
+}
+
+bool cJob::IsAnyoneAssigned()
+{
+    if( myType != eType::anyone )
+        return false;
+    for( auto& step : myStep )
+    {
+        if( step.Start() >= 0 )
+            return true;
+    }
+    return false;
 }
 
 void cSchedule::Add( cJob& job )

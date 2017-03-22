@@ -23,7 +23,16 @@ public:
         return myBusyUntil;
     }
 
-    void Add( cStep& step );
+    /** Step processed by this machine
+
+    @param[in] step
+    @param[in] time to start processing
+
+    Can also think of it as job assigned to person
+
+    */
+    void Add( cStep& step,
+             float time );
 
     bool operator<( const cMachine& m2) const
     {
@@ -73,16 +82,23 @@ public:
     */
     float Hungarian( cSchedule& S );
 
-    set< cMachine >::const_iterator begin()
+    void ManufactureAnyone( cSchedule& S );
+
+    cMachine& find( const string& name )
+    {
+        return myMachine.find( name )->second;
+    }
+
+    map < string, cMachine >::iterator begin()
     {
         return myMachine.begin();
     }
-    set< cMachine >::const_iterator end()
+    map < string, cMachine >::iterator end()
     {
         return myMachine.end();
     }
 
 private:
-    set < cMachine > myMachine;
+    map < string, cMachine > myMachine;
 };
 
