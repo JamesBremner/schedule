@@ -9,7 +9,6 @@ class cMachine
 public:
     cMachine( const string& name )
         : myName( name )
-        , myBusyUntil( 0 )
     {
 
     }
@@ -18,7 +17,7 @@ public:
         return myName;
     }
 
-    float BusyUntil() const
+    cStep::tp_t BusyUntil() const
     {
         return myBusyUntil;
     }
@@ -32,7 +31,7 @@ public:
 
     */
     void Add( cStep& step,
-             float time );
+             cStep::tp_t time );
 
     bool operator<( const cMachine& m2) const
     {
@@ -40,7 +39,7 @@ public:
     }
 private:
     string myName;
-    float myBusyUntil;
+    cStep::tp_t myBusyUntil;
 };
 
 /** Shop containing the machines required by jobs */

@@ -1,14 +1,30 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 #include "nlohmann_json.hpp"
 
 using namespace std;
 
+namespace raven
+{
+namespace sch
+{
+typedef chrono::time_point<chrono::system_clock> tp_t;
+string fTime( const string& format, tp_t tp );
+tp_t fTime( int year, int month, int day );
+}
+}
+
+
 /** A single processing step: the time a job spends on a nachine */
 class cStep
 {
 public:
+
+    typedef chrono::time_point<chrono::system_clock> tp_t;
 
     /** CTOR
         @param[in] name of step
@@ -20,13 +36,8 @@ public:
         The name of the machine, if it has not been mentioned before,
         will cause a machine of that name to be construted.
 
-        The time can be in arbitrary units, so long as they always the same!,
-        in which case the first step of the first job starts at time 0.
-
-        Alternatively, the time can be in Julian days witth 1.0 representing 24 hours.
-        https://en.wikipedia.org/wiki/Julian_day
     */
-    cStep( string name, string machine, float time );
+    cStep( string name, string machine );
 
     /** CTOR of null step
 
@@ -57,39 +68,51 @@ public:
         return myMachine;
     }
 
-    /** Time taken by step on machine */
-    float Time()
+    /** Cost of step on machine */
+    float Cost()
     {
-        return myTime;
+        return myCost;
     }
-    void Time( float t )
+    void Cost( float c )
     {
-        myTime = t;
+        myCost = c;
+    }
+
+    /** Duration of step on machine */
+    std::chrono::seconds Duration()
+    {
+        return myDuration;
+    }
+    void Duration( std::chrono::seconds s )
+    {
+        myDuration = s;
     }
 
     /** Start time of step on machine */
-    float Start() const
+    tp_t Start() const
     {
         return myStart;
     }
 
-    /** Start time of step on machin in formatted text
+    /** Start time of step on machine in formatted text
         @param[in] format string, e.g. "%Y %m %d"
-
-        Assumes times are seconds since unix epoch
     */
     string fStartTime( const string& format ) const
     {
-        char no[250];
-        time_t tt = myStart;
-        strftime(no, sizeof(no), format.c_str(), localtime(&tt));
-        return string( no );
+        return raven::sch::fTime( format, myStart );
     }
 
     /** Set start time of step on machine */
-    void Start( float t )
+    void Start( tp_t t )
     {
         myStart = t;
+        myAssigned = true;
+    }
+
+    /** True if step has been assigned to machine */
+    bool IsAssigned()
+    {
+        return myAssigned;
     }
 
     /** ID of step
@@ -123,9 +146,9 @@ public:
     }
 
     /** time when step will be completed */
-    float Finish()
+    tp_t Finish()
     {
-        return myStart + myTime;
+        return myStart + myDuration;
     }
 
     /** Name of job of which this is a step */
@@ -155,9 +178,11 @@ private:
     string myName;
     string myMachine;
     string myJob;
-    float myTime;
+    float  myCost;
+    chrono::seconds myDuration;
+    tp_t   myStart;
+    bool   myAssigned;
     int myPrevious;
-    float myStart;
     int myID;
     static int LastID;
 };
@@ -178,7 +203,6 @@ public:
           eType type )
         : myName( name )
         , myType( type )
-        , myEarliestStart( 0 )
     {
 
     }
@@ -187,20 +211,22 @@ public:
     {
         myName = name;
     }
-    void EarlistStart( float t )
+    void EarlistStart( cStep::tp_t t )
     {
         myEarliestStart = t;
     }
 
     /** Add next step in job
         @param[in] machine name
+        @param[in] cost of running job on machine
         @param[in] time needed on machine
     */
     void Add( const string& machine,
-              float time );
+              float cost,
+              chrono::seconds time = chrono::seconds{0} );
 
     /** Job in JSON format */
-     nlohmann::json json();
+    nlohmann::json json();
 
     /** Steps in the job
         @return new vector containing steps in this job
@@ -231,7 +257,7 @@ public:
     {
         return myType;
     }
-    float EarliestStart() const
+    cStep::tp_t EarliestStart() const
     {
         return myEarliestStart;
     }
@@ -253,7 +279,7 @@ public:
 private:
     string myName;
     vector< cStep > myStep;
-    float myEarliestStart;
+    cStep::tp_t myEarliestStart;
     eType myType;
 };
 

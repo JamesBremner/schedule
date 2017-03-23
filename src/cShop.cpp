@@ -10,10 +10,10 @@
 
 using namespace std;
 
-void cMachine::Add( cStep& step, float time )
+void cMachine::Add( cStep& step, cStep::tp_t time )
 {
     step.Start( time );
-    myBusyUntil = time + step.Time();
+    myBusyUntil = time + step.Duration();
 }
 
 cShop::cShop( cSchedule& S )
@@ -54,7 +54,7 @@ float cShop::Manufacture( cSchedule& S )
 void cShop::ManufactureAnyone( cSchedule& S )
 {
     // create vector of job start times in chronological order
-    std::vector< float > vStartTimes;
+    std::vector< cStep::tp_t > vStartTimes;
     for( auto& job : S )
     {
         vStartTimes.push_back( job.EarliestStart() );
@@ -85,7 +85,7 @@ void cShop::ManufactureAnyone( cSchedule& S )
                 cMachine& machine = it.second;
 
                 // check if machine is free
-                if( machine.BusyUntil() > startTime + 0.01 )
+                if( machine.BusyUntil() > startTime )
                     continue;
 
                 // assign job to machine
@@ -128,11 +128,11 @@ public:
     {
         for( int row = 0; row < N; row++ )
         {
-            float min = M[ N * row ].Time();
+            float min = M[ N * row ].Cost();
 
             for( int col = 0; col < N; col++ )
             {
-                float cost = M[ N * row + col ].Time();
+                float cost = M[ N * row + col ].Cost();
                 if( cost < min )
                 {
                     min = cost;
@@ -141,8 +141,8 @@ public:
             for( int col = 0; col < N; col++ )
             {
                 int offset = N * row + col;
-                M[ offset ].Time(
-                    M[ offset ].Time() - min );
+                M[ offset ].Cost(
+                    M[ offset ].Cost() - min );
 
             }
         }
@@ -152,11 +152,11 @@ public:
     {
         for( int col = 0; col < N; col++ )
         {
-            float min = M[ col ].Time();
+            float min = M[ col ].Cost();
 
             for( int row = 0; row < N; row++ )
             {
-                float cost = M[ N * row + col ].Time();
+                float cost = M[ N * row + col ].Cost();
                 if( cost < min )
                 {
                     min = cost;
@@ -165,8 +165,8 @@ public:
             for( int row = 0; row < N; row++ )
             {
                 int offset = N * row + col;
-                M[ offset ].Time(
-                    M[ offset ].Time() - min );
+                M[ offset ].Cost(
+                    M[ offset ].Cost() - min );
 
             }
         }
@@ -180,7 +180,7 @@ public:
             foundZero = false;
             for( int row = 0; row < N; row++ )
             {
-                if( M[ N * row + col ].Time() == 0 )
+                if( M[ N * row + col ].Cost() == 0 )
                 {
                     foundZero = true;
                     break;
@@ -198,7 +198,7 @@ public:
         {
             for( int col = 0; col < N; col++ )
             {
-                if( M[  N * row + col ].Time() == 0 )
+                if( M[  N * row + col ].Cost() == 0 )
                 {
                     // assign worker to task
                     Assign( row, col );
@@ -218,7 +218,7 @@ public:
             int CountZerosInRow = 0;
             for( int col = 0; col < N; col++ )
             {
-                if( M[ N * row + col ].Time() == 0 )
+                if( M[ N * row + col ].Cost() == 0 )
                 {
                     CountZerosInRow++;
                 }
@@ -227,7 +227,7 @@ public:
             {
                 for( int col = 0; col < N; col++ )
                 {
-                    if( M[ N * row + col ].Time() == 0 )
+                    if( M[ N * row + col ].Cost() == 0 )
                     {
                         // assign worker to task
                         CountTasksAssigned++;
@@ -236,17 +236,17 @@ public:
                         // cross out any other zeros in column
                         for( int r = row+1; r < N; r++ )
                         {
-                            if(  M[ N * r + col ].Time() == 0 )
+                            if(  M[ N * r + col ].Cost() == 0 )
                             {
-                                M[ N * r + col ].Time( -99 );
+                                M[ N * r + col ].Cost( -99 );
                             }
                         }
                         // cross out any other zeros in row
                         for( int c = col+1; c < N; c++ )
                         {
-                            if(  M[ N * row + c ].Time() == 0 )
+                            if(  M[ N * row + c ].Cost() == 0 )
                             {
-                                M[ N * row + c ].Time( -99 );
+                                M[ N * row + c ].Cost( -99 );
                             }
                         }
                     }
@@ -261,7 +261,7 @@ public:
     void Assign( int worker, int task )
     {
         auto& step = myS.FindStep( M[  N * worker + task ].ID() );
-        step.Start( 1 );
+        step.Start( raven::sch::tp_t() );
         //auto& machine = myShop.find( step.Machine() );
         //machine.Add( step );
         cout << (myS.begin()+worker)->Name() <<"->"
@@ -275,8 +275,8 @@ public:
         myS.Steps( vstep );
         for( auto& s : vstep )
         {
-            if( s.Start() == 1 )
-                Cost += s.Time();
+            if( s.IsAssigned() )
+                Cost += s.Cost();
         }
         cout << "Total Cost " << Cost << "\n";
         return Cost;
@@ -308,7 +308,8 @@ public:
                 {
                     // the job had no step specify the cost of running on this machine
                     // so add one with a huge cost
-                    vNew.push_back( cStep("",machine.Name(),FLT_MAX ));
+                    vNew.push_back( cStep("",machine.Name() ));
+                    vNew.back().Cost( FLT_MAX );
                 }
                 else
                 {
@@ -328,7 +329,7 @@ public:
         {
             for( int col = 0; col < N; col++ )
             {
-                cout << M[ N * row + col ].Time();
+                cout << M[ N * row + col ].Cost();
             }
             cout << "\n";
         }
@@ -378,7 +379,7 @@ void cShop::ManufactureSequential( cSchedule& S )
         cMachine& machine = it->second;
 
         // calculate earliest job can start
-        float start = 0;
+        raven::sch::tp_t start;
         if( s.Previous() >= 0 )
         {
             // wait for previous step to complete

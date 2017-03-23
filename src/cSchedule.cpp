@@ -4,15 +4,51 @@
 
 #include "cSchedule.h"
 
+
+
 int cStep::LastID = -1;
 
 using namespace std;
 
-cStep::cStep( string name, string machine, float time )
+namespace raven
+{
+namespace sch
+{
+typedef chrono::time_point<chrono::system_clock> tp_t;
+string fTime( const string& format, tp_t tp )
+{
+    time_t tt = chrono::system_clock::to_time_t( tp );
+    char buf[250];
+    if( ! strftime(
+                buf,
+                sizeof(buf),
+                format.c_str(),
+                localtime( &tt ) ) )
+        return "----/--/--";
+
+    return string( buf );
+}
+tp_t fTime( int year, int month, int day )
+{
+
+    tm seed;
+    seed.tm_year = year - 1900;
+    seed.tm_mon = month - 1;    // [0, 11] since Jan
+    seed.tm_mday = day;        // [1, 31]
+    seed.tm_hour = 0;        // [0, 23] since midnight
+    seed.tm_min = 0;          // [0, 59] after the hour
+    seed.tm_sec = 0;          // [0, 60] after the min
+    seed.tm_isdst = 0;
+
+    return chrono::system_clock::from_time_t( mktime( &seed ));
+}
+}
+}
+
+cStep::cStep( string name, string machine )
     : myName( name )
     , myMachine( machine )
-    , myTime( time )
-    , myStart( -1 )
+    , myAssigned( false )
 {
     myID = ++LastID;
     LastID = myID;
@@ -25,9 +61,9 @@ nlohmann::json cStep::json()
     nlohmann::json j;
     j["name"] = myName;
     j["machine"] = myMachine;
-    j["time"] = myTime;
+    j["cost"] = myCost;
     j["previous"] = myPrevious;
-    j["start"] = myStart;
+    j["start"] = raven::sch::fTime("%Y-%m-%d",myStart);
     return j;
 }
 
@@ -35,7 +71,7 @@ nlohmann::json cJob::json()
 {
     nlohmann::json j;
     j["name"] = myName;
-    j["earliest"] = myEarliestStart;
+    j["earliest"] =  raven::sch::fTime("%Y-%m-%d",myEarliestStart);
     switch( myType )
     {
     case eType::sequential:
@@ -57,13 +93,18 @@ nlohmann::json cJob::json()
 
 void cJob::Add(
     const string& machine,
-    float time )
+    float cost,
+    chrono::seconds duration
+     )
 {
     int previous = -99;
     if( myStep.size() > 0 )
         previous = myStep.back().ID();
-    myStep.push_back( cStep( "", machine, time ) );
-    myStep.back().Previous( previous );
+    cStep step( "", machine );
+    step.Previous( previous );
+    step.Cost( cost );
+    step.Duration( duration ) ;
+    myStep.push_back( step );
 }
 vector< cStep > cJob::Steps()
 {
@@ -125,7 +166,8 @@ void cSchedule::Assignments( set< cStep >& assigns )
     {
         for( auto& step : job )
         {
-            if( step.Start() >= 0 ) {
+            if( step.IsAssigned() )
+            {
                 step.Job( job.Name() );
                 assigns.insert( step );
             }
@@ -161,7 +203,7 @@ bool cJob::IsAnyoneAssigned()
         return false;
     for( auto& step : myStep )
     {
-        if( step.Start() >= 0 )
+        if( step.IsAssigned() )
             return true;
     }
     return false;

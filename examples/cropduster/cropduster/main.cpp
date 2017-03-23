@@ -40,7 +40,7 @@ struct cSeconds : std::tm
 class cFarm
 {
 public:
-    vector< float > vDate;
+    vector< raven::sch::tp_t > vDate;
     string myName;
 };
 
@@ -102,30 +102,30 @@ void DisplayResults()
     }
 }
 
-void testInput()
-{
-    cFarm f1;
-    f1.myName = 'F';
-    f1.vDate.push_back( 1 );
-    f1.vDate.push_back( 3 );
-    f1.vDate.push_back( 6 );
-    f1.vDate.push_back( 9 );
-    vFarm.push_back( f1 );
-
-    cFarm f2;
-    f2.myName = 'G';
-    f2.vDate.push_back( 3 );
-    f2.vDate.push_back( 6 );
-    f2.vDate.push_back( 9 );
-    f2.vDate.push_back( 12 );
-    vFarm.push_back( f2 );
-
-    cPilot p1;
-    p1.myName = "P";
-    vPilot.push_back(p1);
-    p1.myName = "Q";
-    vPilot.push_back(p1);
-}
+//void testInput()
+//{
+//    cFarm f1;
+//    f1.myName = 'F';
+//    f1.vDate.push_back( 1 );
+//    f1.vDate.push_back( 3 );
+//    f1.vDate.push_back( 6 );
+//    f1.vDate.push_back( 9 );
+//    vFarm.push_back( f1 );
+//
+//    cFarm f2;
+//    f2.myName = 'G';
+//    f2.vDate.push_back( 3 );
+//    f2.vDate.push_back( 6 );
+//    f2.vDate.push_back( 9 );
+//    f2.vDate.push_back( 12 );
+//    vFarm.push_back( f2 );
+//
+//    cPilot p1;
+//    p1.myName = "P";
+//    vPilot.push_back(p1);
+//    p1.myName = "Q";
+//    vPilot.push_back(p1);
+//}
 
 void FarmPrompt()
 {
@@ -143,11 +143,11 @@ void FarmPrompt()
 
     cout << "requesting dusting 30, 60 and 80 days after seeding\n";
 
-    cSeconds t(year, month, day );
-    float d = t.secs();
-    f.vDate.push_back( d + 30 * t.Oneday());
-    f.vDate.push_back( d + 60 * t.Oneday() );
-    f.vDate.push_back( d + 80 * t.Oneday() );
+    raven::sch::tp_t tp = raven::sch::fTime( year, month, day );
+
+    f.vDate.push_back( tp + chrono::hours{30*24} );
+    f.vDate.push_back( tp + chrono::hours{60*24} );
+    f.vDate.push_back( tp + chrono::hours{80*24} );
     vFarm.push_back( f );
 }
 void PilotPrompt()
@@ -171,10 +171,8 @@ void Prompt()
                 cout << "Farm " << f.myName << " dates: ";
                 for( auto d : f.vDate )
                 {
-                    char no[250];
-                    time_t tt = d;
-                    strftime(no, sizeof(no), "%Y %m %d", localtime(&tt));
-                    cout << no << ", ";
+                    cout << raven::sch::fTime("%Y-%m-%d",d);
+                    cout << ", ";
                 }
                 cout << "\n";
             }

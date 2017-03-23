@@ -16,19 +16,23 @@ bool TestSchedule1()
 
     J.Add(
         "A",
-        10) ;
+        10,
+        chrono::seconds{10}) ;
     J.Add(
         "B",
-        2 );
+        2,
+        chrono::seconds{2} );
     S.Add( J );
 
     cJob J2("A-C", cJob::eType::sequential );
     J2.Add(
         "A",
-        1 );
+        1,
+        chrono::seconds{1} );
     J2.Add(
         "C",
-        20 );
+        20,
+        chrono::seconds{20} );
     S.Add( J2 );
 
     cShop Shop( S );
@@ -36,22 +40,22 @@ bool TestSchedule1()
     cout << S.json() << "\n";
 
     bool ret = true;
-    if( S.FindStep( 0 ).Start() != 0 )
+    if( ! S.FindStep( 0 ).IsAssigned() )
     {
         cout << "step 0 failed\n";
         ret = false;
     }
-    if( S.FindStep( 1 ).Start() != 10 )
+    if( ! S.FindStep( 1 ).IsAssigned() )
     {
         cout << "step 1 failed\n";
         ret = false;
     }
-    if( S.FindStep( 2 ).Start() != 10 )
+    if( ! S.FindStep( 2 ).IsAssigned() )
     {
         cout << "step 2 failed\n";
         ret = false;
     }
-    if( S.FindStep( 3 ).Start() != 11 )
+    if( ! S.FindStep( 3 ).IsAssigned() )
     {
         cout << "step 3 failed\n";
         ret = false;
@@ -114,20 +118,19 @@ bool TestSchedule2()
         cout << "Failed to optimize cost\n";
         ret = false;
     }
-    if( S.begin()->begin()->Start() != 1 )
+    if( ! S.begin()->begin()->IsAssigned() )
     {
-        cout << "FAILED 1 " << S.begin()->begin()->Start() << "\n";
+//        cout << "FAILED 1 " << S.begin()->begin()->Start() << "\n";
         ret = false;
     }
-    if( ((S.begin()+1)->begin()+1)->Start() != 1 )
+    if( ! ((S.begin()+1)->begin()+1)->IsAssigned() )
     {
         cout << "FAILED 2 " << "\n";
         ret = false;
     }
-    if( ((S.begin()+2)->begin()+2)->Start() != 1 )
+    if( ! ((S.begin()+2)->begin()+2)->IsAssigned() )
     {
         cout << "FAILED 3 " << "\n";
-
         ret = false;
     }
     return ret;
@@ -215,17 +218,17 @@ bool TestSchedule3()
         cout << "Failed to optimize cost\n";
         ret = false;
     }
-    if( S.begin()->begin()->Start() != 1 )
+    if( ! S.begin()->begin()->IsAssigned()  )
     {
-        cout << "FAILED 1 " << S.begin()->begin()->Start() << "\n";
+        //cout << "FAILED 1 " << S.begin()->begin()->Start() << "\n";
         ret = false;
     }
-    if( ((S.begin()+1)->begin()+1)->Start() != 1 )
+    if( ! ((S.begin()+1)->begin()+1)->IsAssigned()  )
     {
         cout << "FAILED 2 " << "\n";
         ret = false;
     }
-    if( ((S.begin()+2)->begin()+2)->Start() != 1 )
+    if( ! ((S.begin()+2)->begin()+2)->IsAssigned()  )
     {
         cout << "FAILED 3 " << "\n";
         ret = false;
@@ -240,28 +243,28 @@ bool TestSchedule4()
     cSchedule S;
 
     cJob J("Shift1-1", cJob::eType::anyone );
-    J.EarlistStart( 0 );
+    J.EarlistStart( chrono::system_clock::now() );
 
-    // Each shift occupies a doctor ofr one day
+    // Each shift occupies a doctor for one day
     // that is, do not assign a doctor to another shift before 24 hours
-    J.Add("D1",1);
-    J.Add("D2",1);
-    J.Add("D3",1);
+    J.Add("D1",0,chrono::hours{24});
+    J.Add("D2",0,chrono::hours{24});
+    J.Add("D3",0,chrono::hours{24});
     S.Add( J );
     J.Name( "Shift1-2");
-    J.EarlistStart( .34 );
+    J.EarlistStart( chrono::system_clock::now() + chrono::hours{8} );
     S.Add( J );
     J.Name( "Shift1-3");
-    J.EarlistStart( 0.67 );
+    J.EarlistStart( chrono::system_clock::now() + chrono::hours{16} );
     S.Add( J );
     J.Name( "Shift2-1");
-    J.EarlistStart( 1 );
+    J.EarlistStart(chrono::system_clock::now() + chrono::hours{24} );
     S.Add( J );
     J.Name( "Shift2-2");
-    J.EarlistStart( 1.34 );
+    J.EarlistStart( chrono::system_clock::now() + chrono::hours{32} );
     S.Add( J );
     J.Name( "Shift1-3");
-    J.EarlistStart( 1.67 );
+    J.EarlistStart( chrono::system_clock::now() + chrono::hours{40} );
     S.Add( J );
 
     cShop Shop( S );
