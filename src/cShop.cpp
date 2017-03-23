@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cfloat>
 #include <algorithm>
+#include <climits>
 
 #include "cSchedule.h"
 #include "cShop.h"
@@ -95,16 +96,33 @@ void cShop::ManufactureAnyone( cSchedule& S )
 
                 //cout <<machine.Name() << " to " << job.Name() << /* " at " << startTime << */ "\n";
 
-//                cout << "set assigns ";
-//                set< cStep > assigns;
-//                S.Assignments( assigns );
-//                for( auto& s : assigns )
-//                    cout << s.IsAssigned() << " ";
-//                cout << "\n";
-
-
                 break;
             }
+
+            // check if job still needs to be assigned
+            if( job.IsAnyoneAssigned() )
+                continue;
+
+            // find first free machine
+            auto leastDelay = myMachine.begin()->second.BusyUntil() - startTime;
+            string bestMachine = myMachine.begin()->second.Name();
+            for( auto& it : myMachine )
+            {
+                cMachine& machine = it.second;
+
+                auto delay =  machine.BusyUntil() - startTime;
+                if( delay < leastDelay )
+                {
+                    leastDelay = delay;
+                    bestMachine = machine.Name();
+                }
+            }
+            cMachine& machine = find( bestMachine );
+            machine.Add(
+                job.FindStep( bestMachine ),
+                machine.BusyUntil() );
+
+
         }
     }
 
