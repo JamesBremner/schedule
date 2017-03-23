@@ -24,10 +24,7 @@ struct cSeconds : std::tm
         tm_isdst = isDST;      // [-1...] -1 for unknown, 0 for not DST,
         //         any positive value if DST.
     }
-    cSeconds( float secs )
-    {
-        myTimeT = secs;
-    }
+
     float secs()
     {
         return (float) mktime(this);
@@ -36,14 +33,8 @@ struct cSeconds : std::tm
     {
         return (float)( 24 * 60 * 60 );
     }
-    string text()
-    {
-        char no[25];
-        strftime(no, sizeof(no), "%Y %m %d %I %M %S", localtime(&myTimeT));
-        return string( no );
-    }
 
-    time_t myTimeT;
+
 };
 
 class cFarm
@@ -104,10 +95,9 @@ void DisplayResults()
     theSchedule.Assignments( assigns );
     for( auto& step : assigns )
     {
-        cSeconds secs( step.Start() );
         cout << "Pilot " << step.Machine()
              << " dusts farm " << step.Job()
-             << " on " << secs.text( ).substr(0,10)
+             << " on " << step.fStartTime("%Y %m %d")
              << "\n";
     }
 }

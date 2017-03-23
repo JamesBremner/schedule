@@ -56,6 +56,7 @@ public:
     {
         return myMachine;
     }
+
     /** Time taken by step on machine */
     float Time()
     {
@@ -70,6 +71,19 @@ public:
     float Start() const
     {
         return myStart;
+    }
+
+    /** Start time of step on machin in formatted text
+        @param[in] format string, e.g. "%Y %m %d"
+
+        Assumes times are seconds since unix epoch
+    */
+    string fStartTime( const string& format ) const
+    {
+        char no[250];
+        time_t tt = myStart;
+        strftime(no, sizeof(no), format.c_str(), localtime(&tt));
+        return string( no );
     }
 
     /** Set start time of step on machine */
@@ -114,6 +128,7 @@ public:
         return myStart + myTime;
     }
 
+    /** Name of job of which this is a step */
     void Job( const string& name )
     {
         myJob = name;
@@ -123,6 +138,7 @@ public:
         return myJob;
     }
 
+    /** Steps are ordered by their assigned start time */
     bool operator<( const cStep& other) const
     {
         return myStart < other.myStart;
@@ -146,7 +162,7 @@ private:
     static int LastID;
 };
 
-/** Processing steps that must be done in sequence */
+/** Processing steps that must be done to complete job */
 class cJob
 {
 public:
@@ -208,6 +224,7 @@ public:
     /** Find step with machine name */
     cStep& FindStep( const string& machineName );
 
+    /** True if job type is anyone and one of the steps has been assigned to a machine */
     bool IsAnyoneAssigned();
 
     eType Type()
@@ -244,6 +261,7 @@ class cSchedule
 {
 public:
 
+    /** Add job to schedule */
     void Add( cJob& job );
 
     /** Schedule in JSON format */
@@ -255,6 +273,12 @@ public:
     /** Find step from ID */
     cStep& FindStep( int id );
 
+    /** Type of job in schedule
+        @return job type
+
+        This is the type of the first job,
+        all jhobs are assumed to be of th same type
+    */
     cJob::eType Type()
     {
         if( ! myJob.size() )
@@ -262,18 +286,32 @@ public:
         return myJob[0].Type();
     }
 
+    /** Number of jobs in schedule */
     int CountJobs()
     {
         return (int) myJob.size();
     }
 
+    /** Job steps assigned to machines
+        @param[out] assigns a set of job steps assigned to machines, ordered by start time
+
+        This is useful when jobs are composed of steps
+        any one of which needs to be completed.  usually this
+        is some sort of shift scheduling where peaople ( machines )
+        are assigned to jobs.  For these, each job has many steps,
+        one for each possible machine, and in the result, just one step
+        in each job is assigned to a machine.  So, it is convenient
+        to have a list of the steap that have been assigned
+    */
+
     void Assignments( set< cStep >& assigns );
 
-
+    /** iterator pointin to fist jon */
     vector< cJob >::iterator begin()
     {
         return myJob.begin();
     }
+    /** iterator pointing one past last job */
     vector< cJob >::iterator end()
     {
         return myJob.end();

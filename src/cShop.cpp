@@ -93,7 +93,7 @@ void cShop::ManufactureAnyone( cSchedule& S )
                     job.FindStep( machine.Name() ),
                     startTime );
 
-                cout <<machine.Name() << " to " << job.Name() << " at " << startTime <<"\n";
+                //cout <<machine.Name() << " to " << job.Name() << " at " << startTime <<"\n";
 
                 break;
             }
