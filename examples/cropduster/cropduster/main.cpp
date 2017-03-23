@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <chrono>
 #include <set>
@@ -45,9 +46,12 @@ void Input()
 
             // loop over pilots
             // every pilot can do every job at same cost!
+            // and takes them the entire day
             for( auto& p : vPilot )
             {
-                J.Add( p.myName, 1 );
+                J.Add( p.myName,
+                       1,
+                       chrono::hours{24} );
             }
 
             // add job to schedule
@@ -71,7 +75,7 @@ void DisplayResults()
 //    ss << std::setw(4) << s;
 //    cout << ss.str() << endl;
 
-    set< cStep > assigns;
+    multiset< cStep > assigns;
     theSchedule.Assignments( assigns );
     for( auto& step : assigns )
     {
@@ -81,31 +85,6 @@ void DisplayResults()
              << "\n";
     }
 }
-
-//void testInput()
-//{
-//    cFarm f1;
-//    f1.myName = 'F';
-//    f1.vDate.push_back( 1 );
-//    f1.vDate.push_back( 3 );
-//    f1.vDate.push_back( 6 );
-//    f1.vDate.push_back( 9 );
-//    vFarm.push_back( f1 );
-//
-//    cFarm f2;
-//    f2.myName = 'G';
-//    f2.vDate.push_back( 3 );
-//    f2.vDate.push_back( 6 );
-//    f2.vDate.push_back( 9 );
-//    f2.vDate.push_back( 12 );
-//    vFarm.push_back( f2 );
-//
-//    cPilot p1;
-//    p1.myName = "P";
-//    vPilot.push_back(p1);
-//    p1.myName = "Q";
-//    vPilot.push_back(p1);
-//}
 
 void FarmPrompt()
 {
@@ -140,6 +119,49 @@ void PilotPrompt()
     vPilot.push_back(p1);
 
 }
+
+void FilePrompt()
+{
+    cout << "Enter file path\n>";
+    string path;
+    cin >> path;
+
+    ifstream ifs( path );
+    if( ! ifs )
+    {
+        cout << "Cannot open file \"" << path << "\"\n";
+        return;
+    }
+
+    nlohmann::json j;
+    ifs >> j;
+    for( auto& jf : j["farms"] )
+    {
+        cFarm f;
+        f.myName = jf["name"];
+
+        int year, month, day;
+        year = atoi( jf["seed"].get<std::string>().substr(0,4).c_str());
+        month = atoi( jf["seed"].get<std::string>().substr(6,2).c_str());
+        day = atoi( jf["seed"].get<std::string>().substr(9,2).c_str());
+        raven::sch::tp_t tp = raven::sch::fTime( year, month, day );
+        for( int jd : jf["days"] )
+        {
+            f.vDate.push_back( tp + chrono::hours{jd*24} );
+        }
+        vFarm.push_back( f );
+    }
+    for( auto& jp : j["pilots"])
+    {
+        cPilot p;
+        p.myName = jp["name"];
+        vPilot.push_back(p);
+
+    }
+
+}
+
+
 void Prompt()
 {
     while( 1 )
@@ -166,13 +188,20 @@ void Prompt()
             }
             cout << "\n";
         }
+        cout << "R read problem from file\n";
         cout << "F add farm\n";
         cout << "P add pilot\n";
         cout << "C calculate\n";
+        cout << "X exit\n";
+        cout << ">";
         char ans;
         cin >> ans;
         switch( ans )
         {
+        case 'r':
+        case 'R':
+            FilePrompt();
+            break;
         case 'f':
         case 'F':
             FarmPrompt();
@@ -184,6 +213,9 @@ void Prompt()
         case 'C':
         case 'c':
             return;
+        case 'x':
+        case 'X':
+            exit(0);
         }
     }
 }
@@ -191,7 +223,26 @@ void Prompt()
 int main()
 {
 
-    //testInput();
+//    nlohmann::json j;
+//    j = {{
+//    "farms",{{
+//        {
+//            "name","F"
+//        },
+//        {
+//            "seed","2017-03-22"
+//        },
+//        {
+//            "days",{ 30, 60, 80 }
+//        }
+//    }}}};
+
+//    ofstream ofs("test.txt");
+//    ofs << setw(2) << j;
+//    ofs.close();
+
+
+
     Prompt();
     Input();
     Calculate();

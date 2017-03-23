@@ -163,7 +163,7 @@ cStep& cSchedule::FindStep( int id )
     return null;
 }
 
-void cSchedule::Assignments( set< cStep >& assigns )
+void cSchedule::Assignments( multiset< cStep >& assigns )
 {
     for( auto& job : myJob )
     {
@@ -191,10 +191,12 @@ cStep& cJob::FindStep( int id )
 
 cStep& cJob::FindStep( const string& machineName )
 {
+    //cout << "cJob::FindStep looking for " << machineName << " in " << myName << "\n";
     for( auto& s : myStep )
     {
-        if( s.Machine() == machineName )
+        if( s.Machine() == machineName ) {
             return s;
+        }
     }
     static cStep null;
     return null;

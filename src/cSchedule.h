@@ -110,7 +110,7 @@ public:
     }
 
     /** True if step has been assigned to machine */
-    bool IsAssigned()
+    bool IsAssigned() const
     {
         return myAssigned;
     }
@@ -330,7 +330,7 @@ public:
         to have a list of the steap that have been assigned
     */
 
-    void Assignments( set< cStep >& assigns );
+    void Assignments( multiset< cStep >& assigns );
 
     /** iterator pointin to fist jon */
     vector< cJob >::iterator begin()
