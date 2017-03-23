@@ -8,34 +8,6 @@
 
 using namespace std;
 
-struct cSeconds : std::tm
-{
-    cSeconds(const int year, const int month, const int mday,
-             const int hour = 0,
-             const int min = 0, const int sec = 0, const int isDST = -1)
-    {
-        tm_year = year - 1900; // [0, 60] since 1900
-        tm_mon = month - 1;    // [0, 11] since Jan
-        tm_mday = mday;        // [1, 31]
-        tm_hour = hour;        // [0, 23] since midnight
-        tm_min = min;          // [0, 59] after the hour
-        tm_sec = sec;          // [0, 60] after the min
-        //         allows for 1 positive leap second
-        tm_isdst = isDST;      // [-1...] -1 for unknown, 0 for not DST,
-        //         any positive value if DST.
-    }
-
-    float secs()
-    {
-        return (float) mktime(this);
-    }
-    static float Oneday()
-    {
-        return (float)( 24 * 60 * 60 );
-    }
-
-
-};
 
 class cFarm
 {
@@ -57,20 +29,28 @@ cSchedule theSchedule;
 
 void Input()
 {
+    // loop over farms
     for( auto& f : vFarm )
     {
+        // loop over dusting requests for farm
         int count = 1;
         for( auto& d : f.vDate )
         {
+            // construct job
             stringstream ss;
             ss << f.myName << "(" << count << "}";
             count++;
             cJob J(ss.str(), cJob::eType::anyone );
             J.EarlistStart( d );
+
+            // loop over pilots
+            // every pilot can do every job at same cost!
             for( auto& p : vPilot )
             {
                 J.Add( p.myName, 1 );
             }
+
+            // add job to schedule
             theSchedule.Add( J );
         }
     }
