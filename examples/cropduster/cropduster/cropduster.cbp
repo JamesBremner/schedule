@@ -29,9 +29,16 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-std=c++11" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add directory="../../../src" />
+			<Add directory="../../../src/ext" />
 		</Compiler>
+		<Unit filename="../../../src/cSchedule.cpp" />
+		<Unit filename="../../../src/cSchedule.h" />
+		<Unit filename="../../../src/cShop.cpp" />
+		<Unit filename="../../../src/cShop.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

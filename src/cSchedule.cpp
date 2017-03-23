@@ -80,6 +80,9 @@ nlohmann::json cJob::json()
     case eType::anyone:
         j["type"] = "anyone";
         break;
+    default:
+        j["type"] = "???";
+        break;
     }
     nlohmann::json steps;
     for( auto& s : myStep )
