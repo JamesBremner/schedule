@@ -171,7 +171,10 @@ void Prompt()
                 cout << "Farm " << f.myName << " dates: ";
                 for( auto d : f.vDate )
                 {
-                    cout << d << ", ";
+                    char no[250];
+                    time_t tt = d;
+                    strftime(no, sizeof(no), "%Y %m %d", localtime(&tt));
+                    cout << no << ", ";
                 }
                 cout << "\n";
             }
