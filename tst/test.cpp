@@ -37,7 +37,7 @@ bool TestSchedule1()
 
     cShop Shop( S );
     Shop.Manufacture( S );
- //   cout << S.json() << "\n";
+//   cout << S.json() << "\n";
 
     bool ret = true;
     if( ! S.FindStep( 0 ).IsAssigned() )
@@ -110,7 +110,7 @@ bool TestSchedule2()
 
     cShop Shop( S );
     float cost = Shop.Manufacture( S );
- //   cout << S.json() << "\n";
+//   cout << S.json() << "\n";
 
     bool ret = true;
     if( cost != 6 )
@@ -278,16 +278,136 @@ bool TestSchedule4()
     bool ret = true;
     if( s["jobs"][0]["steps"][0]["start"] < 0 )
         ret = false;
-     if(  s["jobs"][1]["steps"][1]["start"] < 0 )
-    ret = false;
-     if(  s["jobs"][2]["steps"][2]["start"] < 0 )
-    ret = false;
-     if(  s["jobs"][3]["steps"][0]["start"] < 0 )
-    ret = false;
-     if(  s["jobs"][4]["steps"][1]["start"] < 0 )
-    ret = false;
-     if(  s["jobs"][5]["steps"][2]["start"] < 0 )
-    ret = false;
+    if(  s["jobs"][1]["steps"][1]["start"] < 0 )
+        ret = false;
+    if(  s["jobs"][2]["steps"][2]["start"] < 0 )
+        ret = false;
+    if(  s["jobs"][3]["steps"][0]["start"] < 0 )
+        ret = false;
+    if(  s["jobs"][4]["steps"][1]["start"] < 0 )
+        ret = false;
+    if(  s["jobs"][5]["steps"][2]["start"] < 0 )
+        ret = false;
+
+    return ret;
+}
+
+bool TestSchedule5()
+{
+    class cFarm
+    {
+    public:
+        vector< raven::sch::tp_t > vDate;
+        string myName;
+    };
+
+    class cPilot
+    {
+    public:
+        cPilot( const string& name ) : myName( name ) {}
+        string myName;
+    };
+
+    vector< cFarm > vFarm;
+    vector< cPilot > vPilot;
+
+    vPilot.push_back( cPilot( "P" ));
+    vPilot.push_back( cPilot( "Q" ));
+
+    cFarm f;
+    f.myName = "F";
+    f.vDate.push_back( raven::sch::fTime( 2017, 3, 22 ));
+    f.vDate.push_back( raven::sch::fTime( 2017, 4, 22 ));
+    vFarm.push_back( f );
+    f.myName = "G";
+    vFarm.push_back( f );
+    f.myName = "H";
+    vFarm.push_back( f );
+
+    cSchedule S;
+
+    // loop over farms
+    for( auto& f : vFarm )
+    {
+        // loop over dusting requests for farm
+        int count = 1;
+        for( auto& d : f.vDate )
+        {
+            // construct job
+            stringstream ss;
+            ss << f.myName << "(" << count << ")";
+            count++;
+            cJob J(ss.str(), cJob::eType::anyone );
+            J.EarlistStart( d );
+
+            // loop over pilots
+            // every pilot can do every job at same cost!
+            // and takes them the entire day
+            for( auto& p : vPilot )
+            {
+                J.Add( p.myName,
+                       1,
+                       chrono::hours{24} );
+            }
+
+            // add job to schedule
+            S.Add( J );
+        }
+    }
+
+    cShop Shop( S );
+    Shop.Manufacture( S );
+
+    bool ret = true;
+    int count = 0;
+    multiset< cStep > assigns;
+    S.Assignments( assigns );
+    if( (int)assigns.size() != 6 )
+        ret = false;
+    for( auto& step : assigns )
+    {
+        cout << "Pilot " << step.Machine()
+             << " dusts farm " << step.Job()
+             << " on " << step.fStartTime("%Y %m %d")
+             << "\n";
+
+        switch( count )
+        {
+        case 0:
+
+            if( step.Machine() != "P" )
+                ret = false;
+            if( step.Job() != "F(1)")
+                ret = false;
+            if( step.Start() != raven::sch::fTime( 2017, 3, 22 ) )
+                ret = false;
+            break;
+
+        case 1:
+
+            if( step.Machine() != "Q" )
+                ret = false;
+            if( step.Job() != "G(1)")
+                ret = false;
+            if( step.Start() != raven::sch::fTime( 2017, 3, 22 ) )
+                ret = false;
+            break;
+
+        case 2:
+
+            if( step.Machine() != "P" )
+                ret = false;
+            if( step.Job() != "H(1)")
+                ret = false;
+            if( step.Start() != raven::sch::fTime( 2017, 3, 23 ) )
+                ret = false;
+            break;
+
+        }
+        count++;
+    }
+
+
 
     return ret;
 }
@@ -304,6 +424,8 @@ int main()
     if( ! TestSchedule3() )
         res = false;
     if( ! TestSchedule4() )
+        res = false;
+    if( ! TestSchedule5() )
         res = false;
 
     if( res )

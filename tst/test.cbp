@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="schedule" />
+		<Option title="test" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -32,16 +32,18 @@
 			<Add option="-std=c++11" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
-			<Add directory="src" />
-			<Add directory="src/ext" />
+			<Add directory="../src" />
+			<Add directory="../src/ext" />
 		</Compiler>
-		<Unit filename="main.cpp" />
-		<Unit filename="src/cSchedule.cpp" />
+		<Unit filename="../src/cSchedule.cpp" />
+		<Unit filename="../src/cSchedule.h" />
+		<Unit filename="../src/cShop.cpp" />
+		<Unit filename="../src/cShop.h" />
 		<Unit filename="src/cSchedule.h" />
-		<Unit filename="src/cShop.cpp" />
 		<Unit filename="src/cShop.h" />
 		<Unit filename="src/ext/json.hpp" />
 		<Unit filename="src/ext/nlohmann_json.hpp" />
+		<Unit filename="test.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
