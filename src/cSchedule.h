@@ -199,6 +199,16 @@ public:
         anyone          // any one step can be done
     };
 
+    /** CTOR
+
+    @param[in] name
+    @param[in] type: sequential or anyone
+
+    Sequential jobs have multiple steps that must be done in sequence
+
+    Anyone jobs are complete in one step
+
+    */
     cJob( const string& name,
           eType type )
         : myName( name )
@@ -215,6 +225,7 @@ public:
     {
         myEarliestStart = t;
     }
+
 
     /** Add next step in job
         @param[in] machine name
@@ -331,6 +342,9 @@ public:
     */
 
     void Assignments( multiset< cStep >& assigns );
+
+    /** Job start times in chronological order */
+    set< cStep::tp_t > JobStartTimes();
 
     /** iterator pointin to fist jon */
     vector< cJob >::iterator begin()

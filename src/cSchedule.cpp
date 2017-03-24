@@ -98,7 +98,7 @@ void cJob::Add(
     const string& machine,
     float cost,
     chrono::seconds duration
-     )
+)
 {
     int previous = -99;
     if( myStep.size() > 0 )
@@ -151,6 +151,17 @@ void cSchedule::Steps( vector< cStep >& vStep )
         j.AddSteps( vStep );
     }
 }
+
+set< cStep::tp_t > cSchedule::JobStartTimes()
+{
+    set< cStep::tp_t > StartTimes;
+    for( auto& job : myJob )
+    {
+        StartTimes.insert( job.EarliestStart() );
+    }
+    return StartTimes;
+}
+
 cStep& cSchedule::FindStep( int id )
 {
     for( auto& j : myJob )
@@ -194,7 +205,8 @@ cStep& cJob::FindStep( const string& machineName )
     //cout << "cJob::FindStep looking for " << machineName << " in " << myName << "\n";
     for( auto& s : myStep )
     {
-        if( s.Machine() == machineName ) {
+        if( s.Machine() == machineName )
+        {
             return s;
         }
     }

@@ -17,6 +17,28 @@ void cMachine::Add( cStep& step, cStep::tp_t time )
     myBusyUntil = time + step.Duration();
 }
 
+void cMachine::Assign( cJob& job )
+{
+    // find step in job that specifies assigning the job to this machine
+    cStep& step = job.FindStep( myName );
+
+    // time that job wants to start
+    cStep::tp_t start = job.EarliestStart();
+
+    // check that the machine will be ready when thye job wants to start
+    if( myBusyUntil > start )
+    {
+        // start will have to be delayed until machine is free
+        start = myBusyUntil;
+    }
+
+    // start the job step as soon as possible
+    step.Start( start );
+
+    // machine will be occupied until step is finished
+    myBusyUntil = start + step.Duration();
+}
+
 cShop::cShop( cSchedule& S )
 {
     vector< cStep > vStep ;
@@ -54,18 +76,10 @@ float cShop::Manufacture( cSchedule& S )
 
 void cShop::ManufactureAnyone( cSchedule& S )
 {
-    // create vector of job start times in chronological order
-    std::vector< cStep::tp_t > vStartTimes;
-    for( auto& job : S )
-    {
-        vStartTimes.push_back( job.EarliestStart() );
-    }
-    sort( vStartTimes.begin(), vStartTimes.end() );
-
     // for each start time
-    for( auto startTime : vStartTimes )
+    for( auto startTime : S.JobStartTimes() )
     {
-        //cout << "start time " << startTime << "\n";
+        //cout << "start time " << raven::sch::fTime("%Y-%m-%d",startTime)   << "\n";
 
         // loop over jobs
         for( auto& job : S )
@@ -74,58 +88,65 @@ void cShop::ManufactureAnyone( cSchedule& S )
             if( job.EarliestStart() != startTime )
                 continue;
 
-            // check if job still needs to be assigned
-            if( job.IsAnyoneAssigned() )
-                continue;
 
-            //cout << "Assigning job " << job.Name() << "\n";
-
-            // loop over machines
-            for( auto& it : myMachine )
+            auto machine = findCheapestReady( job );
+            if( machine != myMachine.end() )
             {
-                cMachine& machine = it.second;
+                // assign cheapest ready machine
 
-                // check if machine is free
-                if( machine.BusyUntil() > startTime )
-                    continue;
-
-                // assign job to machine
-                machine.Add(
-                    job.FindStep( machine.Name() ),
-                    startTime );
-
-                //cout <<machine.Name() << " to " << job.Name() << /* " at " << startTime << */ "\n";
-
-                break;
+                machine->second.Assign( job );
             }
-
-            // check if job still needs to be assigned
-            if( job.IsAnyoneAssigned() )
-                continue;
-
-            // find first free machine
-            auto leastDelay = myMachine.begin()->second.BusyUntil() - startTime;
-            string bestMachine = myMachine.begin()->second.Name();
-            for( auto& it : myMachine )
+            else
             {
-                cMachine& machine = it.second;
+                // no machines are free to take on the job immediatly
+                // assign the first machine that becomes free
 
-                auto delay =  machine.BusyUntil() - startTime;
-                if( delay < leastDelay )
-                {
-                    leastDelay = delay;
-                    bestMachine = machine.Name();
-                }
+                findFirstFree().Assign( job );
             }
-            cMachine& machine = find( bestMachine );
-            machine.Add(
-                job.FindStep( bestMachine ),
-                machine.BusyUntil() );
-
-
         }
     }
 
+}
+map<string,cMachine>::iterator
+cShop::findCheapestReady(  cJob& job )
+{
+    auto bestMachine = myMachine.end();
+    float leastCost = FLT_MAX;
+    // loop over machines
+    for( auto it = myMachine.begin(); it != myMachine.end(); it++ )
+    {
+        cMachine& machine = it->second;
+
+        // check if machine is free
+        if( machine.BusyUntil() > job.EarliestStart() )
+            continue;
+
+        float cost = job.FindStep( machine.Name() ).Cost();
+        if( cost < leastCost )
+        {
+            leastCost = cost;
+            bestMachine = it;
+        }
+    }
+    return bestMachine;
+}
+cMachine& cShop::findFirstFree()
+{
+    cMachine* bestMachine = &myMachine.begin()->second;
+    auto leastDelay = bestMachine->BusyUntil();
+
+    for( auto& it : myMachine )
+    {
+        cMachine& machine = it.second;
+
+        auto delay =  machine.BusyUntil();
+        if( delay < leastDelay )
+        {
+            leastDelay = delay;
+            bestMachine = &machine;
+        }
+    }
+    return *bestMachine;
 }
 
 class cHungarianCostMatrix

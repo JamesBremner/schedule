@@ -22,12 +22,17 @@ public:
         return myBusyUntil;
     }
 
+    /** Assign job to machine
+        @param[in] job to be assigned
+
+        Assumes exactly one step in job for this machine
+    */
+    void Assign( cJob& job );
+
     /** Step processed by this machine
 
     @param[in] step
     @param[in] time to start processing
-
-    Can also think of it as job assigned to person
 
     */
     void Add( cStep& step,
@@ -99,5 +104,8 @@ public:
 
 private:
     map < string, cMachine > myMachine;
+
+    cMachine& findFirstFree();
+    map<string,cMachine>::iterator findCheapestReady(  cJob& job );
 };
 

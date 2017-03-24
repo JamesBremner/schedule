@@ -37,7 +37,7 @@ bool TestSchedule1()
 
     cShop Shop( S );
     Shop.Manufacture( S );
-    cout << S.json() << "\n";
+ //   cout << S.json() << "\n";
 
     bool ret = true;
     if( ! S.FindStep( 0 ).IsAssigned() )
@@ -110,7 +110,7 @@ bool TestSchedule2()
 
     cShop Shop( S );
     float cost = Shop.Manufacture( S );
-    cout << S.json() << "\n";
+ //   cout << S.json() << "\n";
 
     bool ret = true;
     if( cost != 6 )
@@ -210,7 +210,7 @@ bool TestSchedule3()
 
     cShop Shop( S );
     float cost = Shop.Manufacture( S );
-    cout << S.json() << "\n";
+    //cout << S.json() << "\n";
 
     bool ret = true;
     if( cost != 9 )
@@ -273,7 +273,7 @@ bool TestSchedule4()
 
     stringstream ss;
     ss << std::setw(4) << s;
-    cout << ss.str() << endl;
+    //cout << ss.str() << endl;
 
     bool ret = true;
     if( s["jobs"][0]["steps"][0]["start"] < 0 )
