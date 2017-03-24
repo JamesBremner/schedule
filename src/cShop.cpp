@@ -10,8 +10,11 @@
 #include "cShop.h"
 
 using namespace std;
-
-void cMachine::Add( cStep& step, cStep::tp_t time )
+namespace raven
+{
+namespace sch
+{
+void cMachine::Add( cStep& step, date_t time )
 {
     step.Start( time );
     myBusyUntil = time + step.Duration();
@@ -23,7 +26,7 @@ void cMachine::Assign( cJob& job )
     cStep& step = job.FindStep( myName );
 
     // time that job wants to start
-    cStep::tp_t start = job.EarliestStart();
+    date_t start = job.EarliestStart();
 
     // check that the machine will be ready when thye job wants to start
     if( myBusyUntil > start )
@@ -308,7 +311,7 @@ public:
     void Assign( int worker, int task )
     {
         auto& step = myS.FindStep( M[  N * worker + task ].ID() );
-        step.Start( raven::sch::tp_t() );
+        step.Start( raven::sch::date_t() );
         //auto& machine = myShop.find( step.Machine() );
         //machine.Add( step );
         cout << (myS.begin()+worker)->Name() <<"->"
@@ -426,7 +429,7 @@ void cShop::ManufactureSequential( cSchedule& S )
         cMachine& machine = it->second;
 
         // calculate earliest job can start
-        raven::sch::tp_t start;
+        raven::sch::date_t start;
         if( s.Previous() >= 0 )
         {
             // wait for previous step to complete
@@ -447,4 +450,6 @@ void cShop::ManufactureSequential( cSchedule& S )
 
     }
 
+}
+}
 }

@@ -8,12 +8,12 @@
 #include "cShop.h"
 
 using namespace std;
-
+using namespace raven::sch;
 
 class cFarm
 {
 public:
-    vector< raven::sch::tp_t > vDate;
+    vector< raven::sch::date_t > vDate;
     string myName;
 };
 
@@ -102,7 +102,7 @@ void FarmPrompt()
 
     cout << "requesting dusting 30, 60 and 80 days after seeding\n";
 
-    raven::sch::tp_t tp = raven::sch::fTime( year, month, day );
+    raven::sch::date_t tp = raven::sch::fTime( year, month, day );
 
     f.vDate.push_back( tp + chrono::hours{30*24} );
     f.vDate.push_back( tp + chrono::hours{60*24} );
@@ -144,7 +144,7 @@ void FilePrompt()
         year = atoi( jf["seed"].get<std::string>().substr(0,4).c_str());
         month = atoi( jf["seed"].get<std::string>().substr(6,2).c_str());
         day = atoi( jf["seed"].get<std::string>().substr(9,2).c_str());
-        raven::sch::tp_t tp = raven::sch::fTime( year, month, day );
+        raven::sch::date_t tp = raven::sch::fTime( year, month, day );
         for( int jd : jf["days"] )
         {
             f.vDate.push_back( tp + chrono::hours{jd*24} );

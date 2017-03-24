@@ -6,7 +6,7 @@
 
 
 
-int cStep::LastID = -1;
+
 
 using namespace std;
 
@@ -14,8 +14,8 @@ namespace raven
 {
 namespace sch
 {
-typedef chrono::time_point<chrono::system_clock> tp_t;
-string fTime( const string& format, tp_t tp )
+typedef chrono::time_point<chrono::system_clock> date_t;
+string fTime( const string& format, date_t tp )
 {
     time_t tt = chrono::system_clock::to_time_t( tp );
     char buf[250];
@@ -28,7 +28,7 @@ string fTime( const string& format, tp_t tp )
 
     return string( buf );
 }
-tp_t fTime( int year, int month, int day )
+date_t fTime( int year, int month, int day )
 {
 
     tm seed;
@@ -42,8 +42,8 @@ tp_t fTime( int year, int month, int day )
 
     return chrono::system_clock::from_time_t( mktime( &seed ));
 }
-}
-}
+int cStep::LastID = -1;
+
 
 cStep::cStep( string name, string machine )
     : myName( name )
@@ -152,9 +152,9 @@ void cSchedule::Steps( vector< cStep >& vStep )
     }
 }
 
-set< cStep::tp_t > cSchedule::JobStartTimes()
+set< date_t > cSchedule::JobStartTimes()
 {
-    set< cStep::tp_t > StartTimes;
+    set< date_t > StartTimes;
     for( auto& job : myJob )
     {
         StartTimes.insert( job.EarliestStart() );
@@ -237,4 +237,6 @@ void cSchedule::Add( cJob& job )
     }
 
     myJob.push_back( job );
+}
+}
 }

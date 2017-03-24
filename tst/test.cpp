@@ -6,13 +6,13 @@
 #include "cShop.h"
 
 using namespace std;
-
+using namespace raven::sch;
 
 bool TestSchedule1()
 {
-    cSchedule S;
+    raven::sch::cSchedule S;
 
-    cJob J("A-B", cJob::eType::sequential );
+    raven::sch::cJob J("A-B", cJob::eType::sequential );
 
     J.Add(
         "A",
@@ -24,7 +24,7 @@ bool TestSchedule1()
         chrono::seconds{2} );
     S.Add( J );
 
-    cJob J2("A-C", cJob::eType::sequential );
+    raven::sch::cJob J2("A-C", cJob::eType::sequential );
     J2.Add(
         "A",
         1,
@@ -35,7 +35,7 @@ bool TestSchedule1()
         chrono::seconds{20} );
     S.Add( J2 );
 
-    cShop Shop( S );
+    raven::sch::cShop Shop( S );
     Shop.Manufacture( S );
 //   cout << S.json() << "\n";
 
@@ -297,7 +297,7 @@ bool TestSchedule5()
     class cFarm
     {
     public:
-        vector< raven::sch::tp_t > vDate;
+        vector< raven::sch::date_t > vDate;
         string myName;
     };
 

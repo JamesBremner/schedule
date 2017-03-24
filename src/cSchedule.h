@@ -12,19 +12,16 @@ namespace raven
 {
 namespace sch
 {
-typedef chrono::time_point<chrono::system_clock> tp_t;
-string fTime( const string& format, tp_t tp );
-tp_t fTime( int year, int month, int day );
-}
-}
+typedef chrono::time_point<chrono::system_clock> date_t;
+string fTime( const string& format, date_t tp );
+date_t fTime( int year, int month, int day );
+
 
 
 /** A single processing step: the time a job spends on a nachine */
 class cStep
 {
 public:
-
-    typedef chrono::time_point<chrono::system_clock> tp_t;
 
     /** CTOR
         @param[in] name of step
@@ -89,7 +86,7 @@ public:
     }
 
     /** Start time of step on machine */
-    tp_t Start() const
+    date_t Start() const
     {
         return myStart;
     }
@@ -103,7 +100,7 @@ public:
     }
 
     /** Set start time of step on machine */
-    void Start( tp_t t )
+    void Start( date_t t )
     {
         myStart = t;
         myAssigned = true;
@@ -146,7 +143,7 @@ public:
     }
 
     /** time when step will be completed */
-    tp_t Finish()
+    date_t Finish()
     {
         return myStart + myDuration;
     }
@@ -180,7 +177,7 @@ private:
     string myJob;
     float  myCost;
     chrono::seconds myDuration;
-    tp_t   myStart;
+    date_t   myStart;
     bool   myAssigned;
     int myPrevious;
     int myID;
@@ -221,7 +218,7 @@ public:
     {
         myName = name;
     }
-    void EarlistStart( cStep::tp_t t )
+    void EarlistStart( date_t t )
     {
         myEarliestStart = t;
     }
@@ -268,7 +265,7 @@ public:
     {
         return myType;
     }
-    cStep::tp_t EarliestStart() const
+    date_t EarliestStart() const
     {
         return myEarliestStart;
     }
@@ -290,7 +287,7 @@ public:
 private:
     string myName;
     vector< cStep > myStep;
-    cStep::tp_t myEarliestStart;
+    date_t myEarliestStart;
     eType myType;
 };
 
@@ -314,7 +311,7 @@ public:
         @return job type
 
         This is the type of the first job,
-        all jhobs are assumed to be of th same type
+        all jhobs are assumed to be of the same type
     */
     cJob::eType Type()
     {
@@ -344,7 +341,7 @@ public:
     void Assignments( multiset< cStep >& assigns );
 
     /** Job start times in chronological order */
-    set< cStep::tp_t > JobStartTimes();
+    set< date_t > JobStartTimes();
 
     /** iterator pointin to fist jon */
     vector< cJob >::iterator begin()
@@ -359,3 +356,5 @@ public:
 private:
     vector<cJob> myJob;
 };
+}
+}

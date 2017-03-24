@@ -3,7 +3,10 @@
 #include <set>
 
 using namespace std;
-
+namespace raven
+{
+namespace sch
+{
 class cMachine
 {
 public:
@@ -17,7 +20,7 @@ public:
         return myName;
     }
 
-    cStep::tp_t BusyUntil() const
+    date_t BusyUntil() const
     {
         return myBusyUntil;
     }
@@ -36,7 +39,7 @@ public:
 
     */
     void Add( cStep& step,
-             cStep::tp_t time );
+             date_t time );
 
     bool operator<( const cMachine& m2) const
     {
@@ -44,7 +47,7 @@ public:
     }
 private:
     string myName;
-    cStep::tp_t myBusyUntil;
+    date_t myBusyUntil;
 };
 
 /** Shop containing the machines required by jobs */
@@ -108,4 +111,5 @@ private:
     cMachine& findFirstFree();
     map<string,cMachine>::iterator findCheapestReady(  cJob& job );
 };
-
+}
+}
