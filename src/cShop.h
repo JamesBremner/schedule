@@ -106,10 +106,14 @@ public:
     }
 
 private:
+    cSchedule& mySchedule;
     map < string, cMachine > myMachine;
 
     cMachine& findFirstFree();
     map<string,cMachine>::iterator findCheapestReady(  cJob& job );
+
+        /** Job start times in chronological order */
+    set< date_t > JobStartTimes();
 };
 }
 }

@@ -152,15 +152,7 @@ void cSchedule::Steps( vector< cStep >& vStep )
     }
 }
 
-set< date_t > cSchedule::JobStartTimes()
-{
-    set< date_t > StartTimes;
-    for( auto& job : myJob )
-    {
-        StartTimes.insert( job.EarliestStart() );
-    }
-    return StartTimes;
-}
+
 
 cStep& cSchedule::FindStep( int id )
 {

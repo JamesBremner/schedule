@@ -43,6 +43,7 @@ void cMachine::Assign( cJob& job )
 }
 
 cShop::cShop( cSchedule& S )
+: mySchedule( S )
 {
     vector< cStep > vStep ;
     S.Steps(  vStep  );
@@ -80,7 +81,7 @@ float cShop::Manufacture( cSchedule& S )
 void cShop::ManufactureAnyone( cSchedule& S )
 {
     // for each start time
-    for( auto startTime : S.JobStartTimes() )
+    for( auto startTime : JobStartTimes() )
     {
         //cout << "start time " << raven::sch::fTime("%Y-%m-%d",startTime)   << "\n";
 
@@ -110,6 +111,16 @@ void cShop::ManufactureAnyone( cSchedule& S )
     }
 
 }
+set< date_t > cShop::JobStartTimes()
+{
+    set< date_t > StartTimes;
+    for( auto& job : mySchedule )
+    {
+        StartTimes.insert( job.EarliestStart() );
+    }
+    return StartTimes;
+}
+
 map<string,cMachine>::iterator
 cShop::findCheapestReady(  cJob& job )
 {

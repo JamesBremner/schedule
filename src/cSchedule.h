@@ -291,6 +291,7 @@ private:
     eType myType;
 };
 
+/** A collection of jobs that must be assigned to machines */
 class cSchedule
 {
 public:
@@ -302,7 +303,7 @@ public:
     nlohmann::json json();
 
     /** All the steps in a schedule, copied into a vector */
-    void Steps( vector< cStep >& vStep );
+    //void Steps( vector< cStep >& vStep );
 
     /** Find step from ID */
     cStep& FindStep( int id );
@@ -311,7 +312,7 @@ public:
         @return job type
 
         This is the type of the first job,
-        all jhobs are assumed to be of the same type
+        all jobs are assumed to be of the same type
     */
     cJob::eType Type()
     {
@@ -335,15 +336,12 @@ public:
         are assigned to jobs.  For these, each job has many steps,
         one for each possible machine, and in the result, just one step
         in each job is assigned to a machine.  So, it is convenient
-        to have a list of the steap that have been assigned
+        to have a list of the steps that have been assigned
     */
 
     void Assignments( multiset< cStep >& assigns );
 
-    /** Job start times in chronological order */
-    set< date_t > JobStartTimes();
-
-    /** iterator pointin to fist jon */
+    /** iterator pointing to first job */
     vector< cJob >::iterator begin()
     {
         return myJob.begin();
