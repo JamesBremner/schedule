@@ -43,6 +43,7 @@ void cMachine::Assign( cJob& job )
 }
 
 cShop::cShop( cSchedule& S )
+ : myfHungarian( false )
 {
     vector< cStep > vStep ;
     S.Steps(  vStep  );
@@ -51,6 +52,7 @@ cShop::cShop( cSchedule& S )
         myMachine.insert( make_pair( s.Machine(), cMachine( s.Machine() )));
     }
 }
+
 
 float cShop::Manufacture( cSchedule& S )
 {
@@ -62,7 +64,7 @@ float cShop::Manufacture( cSchedule& S )
         break;
 
     case cJob::eType::anyone:
-        if( (int)myMachine.size() == S.CountJobs() )
+        if( myfHungarian && ( (int)myMachine.size() == S.CountJobs() ) )
         {
             // the number of jobs matches the number of machines
             // so we can use the Hungarian algorithm

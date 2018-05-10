@@ -65,6 +65,12 @@ public:
     */
     cShop( cSchedule& S );
 
+    /// Allow Hungarian
+    void Hungarian( )
+    {
+        myfHungarian = true;
+    }
+
     /** Assign steps to machines
         @return a measure of the cost
      */
@@ -107,6 +113,7 @@ public:
 
 private:
     map < string, cMachine > myMachine;
+    bool myfHungarian;                      // true if Hungarian algorithm may be used
 
     cMachine& findFirstFree();
     map<string,cMachine>::iterator findCheapestReady(  cJob& job );
