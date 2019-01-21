@@ -10,6 +10,10 @@
 class cVehicleType
 {
 public:
+    cVehicleType()
+    {
+
+    }
     cVehicleType( const std::string& name, int crew )
         : myName( name)
         , myCrew( crew )
@@ -19,6 +23,10 @@ public:
     std::string Name()
     {
         return myName;
+    }
+    int Crew()
+    {
+        return myCrew;
     }
 private:
     std::string myName;
@@ -30,8 +38,10 @@ private:
 class cVehicle
 {
 public:
-    cVehicle( const std::string& type )
+    cVehicle( const std::string& type,
+              const std::string& plate )
         : myType( type )
+        , myPlate( plate )
     {
 
     }
@@ -39,8 +49,13 @@ public:
     {
         return myType;
     }
+    std::string Plate()
+    {
+        return myPlate;
+    }
 private:
     std::string myType;
+    std::string myPlate;
 };
 
 class cPerson
@@ -51,7 +66,7 @@ public:
     {
 
     }
-        std::string Name()
+    std::string Name()
     {
         return myName;
     }
@@ -75,7 +90,8 @@ public:
 
         if( inbox.show( name, crew ) )
         {
-            if( FindType( name.value() ))
+            cVehicleType vt;
+            if( FindType( name.value(), vt ))
             {
                 nana::msgbox msg("Already have this vehicle type");
                 msg.show();
@@ -96,10 +112,12 @@ public:
             type_names.push_back( t.Name() );
         }
         nana::inputbox::text type("Type", type_names );
+        char plate_default[] { 65 + myFleet.size(), 0 };
+        nana::inputbox::text plate("Plate", std::string(plate_default));
         nana::inputbox inbox( fm, "Vehicle Type to add" );
-        if( inbox.show(type ) )
+        if( inbox.show(type, plate ) )
         {
-            myFleet.push_back( cVehicle( type.value() ));
+            myFleet.push_back( cVehicle( type.value(), plate.value() ));
         }
 
     }
@@ -128,19 +146,71 @@ public:
         fleet_text.append(std::to_string( myFleet.size())+ " Vehicles:\n", false);
         for( auto& v : myFleet )
         {
-            fleet_text.append( v.Type()+"\n", false );
+            fleet_text.append( v.Plate()+" "+v.Type()+"\n", false );
         }
         fleet_text.append("\n" + std::to_string( myPersonVector.size())+ " People:\n", false);
         for( auto& p : myPersonVector )
         {
             fleet_text.append( p.Name() + "\n", false );
         }
+        if( myAssign.size() )
+        {
+            fleet_text.append("\nSchedule:\n",false);
+            for( auto& a : myAssign )
+            {
+                fleet_text.append(
+                    a.second.Name()+" in "+a.first.Type()+" plate "+a.first.Plate()+" "+"\n",
+                    false);
+            }
+        }
     }
-    bool FindType( const std::string& type )
+
+    bool Schedule()
+    {
+        myAssign.clear();
+
+        std::vector< cPerson >::iterator ItPerson = myPersonVector.begin();
+
+        // loop over vehicles
+        for( auto& v : myFleet )
+        {
+            cVehicleType vt;
+            if( ! FindType( v.Type(), vt ) )
+                throw std::runtime_error("Vehicle type error");
+            // loop over people needed by vehicle type
+            for( int kp = 0; kp < vt.Crew(); kp++ )
+            {
+                if( ItPerson == myPersonVector.end() )
+                {
+                    nana::msgbox msg("Not enough people to crew the fleet");
+                    msg.show();
+                    myAssign.clear();
+                    return false;
+                }
+                myAssign.push_back( std::pair< cVehicle, cPerson >( v, *ItPerson ) );
+
+                ItPerson++;
+            }
+        }
+        return true;
+    }
+
+private:
+
+    std::vector< cVehicle > myFleet;
+    std::vector< cVehicleType > myTypeVector;
+    std::vector< cPerson > myPersonVector;
+    std::vector< std::pair< cVehicle, cPerson > > myAssign;
+
+    bool FindType( const std::string& type_name,
+                   cVehicleType& type )
     {
         for( auto& t : myTypeVector )
-            if( t.Name() == type )
+            if( t.Name() == type_name )
+            {
+                type = t;
                 return true;
+            }
         return false;
     }
     bool FindPerson( const std::string& type )
@@ -150,10 +220,6 @@ public:
                 return true;
         return false;
     }
-private:
-    std::vector< cVehicle > myFleet;
-    std::vector< cVehicleType > myTypeVector;
-    std::vector< cPerson > myPersonVector;
 };
 
 int main()
@@ -161,8 +227,8 @@ int main()
     cFleet theFleet;
 
     // construct application form
-    nana::form fm( nana::rectangle( 100,100, 300, 300 ));
-    nana::textbox fleet_text( fm, nana::rectangle( 10,150, 300, 300 ));
+    nana::form fm( nana::rectangle( 100,100, 250, 450 ));
+    nana::textbox fleet_text( fm, nana::rectangle( 10,150, 250, 350 ));
 
     nana::button new_type_button( fm, nana::rectangle( 10, 10, 150, 20 ) );
     new_type_button.caption("Add new type of vehicle");
@@ -186,9 +252,11 @@ int main()
     });
     nana::button schedule_button( fm, nana::rectangle( 10, 100, 100, 20 ) );
     schedule_button.caption("SCHEDULE");
-
-
-
+    schedule_button.events().click([&]
+    {
+        theFleet.Schedule();
+        theFleet.Display( fleet_text );
+    });
 
     // show & run
     fm.show();
