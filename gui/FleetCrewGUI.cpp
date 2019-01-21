@@ -155,42 +155,55 @@ public:
         }
         if( myAssign.size() )
         {
-            fleet_text.append("\nSchedule:\n",false);
-            for( auto& a : myAssign )
+            int ks = 1;
+            for( auto& sa : myAssign )
             {
-                fleet_text.append(
-                    a.second.Name()+" in "+a.first.Type()+" plate "+a.first.Plate()+" "+"\n",
-                    false);
+                fleet_text.append("\nSchedule Shift "+std::to_string(ks++)+":\n",
+                                  false);
+                for( auto& a : sa )
+                {
+                    fleet_text.append(
+                        a.second.Name()+" in "+a.first.Type()+" plate "+a.first.Plate()+" "+"\n",
+                        false);
+                }
             }
         }
     }
 
-    bool Schedule()
+    bool Schedule( int shifts )
     {
         myAssign.clear();
 
-        std::vector< cPerson >::iterator ItPerson = myPersonVector.begin();
-
-        // loop over vehicles
-        for( auto& v : myFleet )
+        // loop over shifts
+        for( int ks = 0; ks < shifts; ks++ )
         {
-            cVehicleType vt;
-            if( ! FindType( v.Type(), vt ) )
-                throw std::runtime_error("Vehicle type error");
-            // loop over people needed by vehicle type
-            for( int kp = 0; kp < vt.Crew(); kp++ )
-            {
-                if( ItPerson == myPersonVector.end() )
-                {
-                    nana::msgbox msg("Not enough people to crew the fleet");
-                    msg.show();
-                    myAssign.clear();
-                    return false;
-                }
-                myAssign.push_back( std::pair< cVehicle, cPerson >( v, *ItPerson ) );
+            std::vector< std::pair< cVehicle, cPerson > > sa;
+            std::vector< cPerson >::iterator ItPerson = myPersonVector.begin();
 
-                ItPerson++;
+            // loop over vehicles
+            for( auto& v : myFleet )
+            {
+                cVehicleType vt;
+                if( ! FindType( v.Type(), vt ) )
+                    throw std::runtime_error("Vehicle type error");
+                // loop over people needed by vehicle type
+                for( int kp = 0; kp < vt.Crew(); kp++ )
+                {
+                    if( ItPerson == myPersonVector.end() )
+                    {
+                        nana::msgbox msg("Not enough people to crew the fleet");
+                        msg.show();
+                        myAssign.clear();
+                        return false;
+                    }
+                    sa.push_back( std::pair< cVehicle, cPerson >( v, *ItPerson ) );
+
+                    ItPerson++;
+                }
             }
+            myAssign.push_back( sa );
+
+            std::random_shuffle( myPersonVector.begin(), myPersonVector.end() );
         }
         return true;
     }
@@ -200,7 +213,7 @@ private:
     std::vector< cVehicle > myFleet;
     std::vector< cVehicleType > myTypeVector;
     std::vector< cPerson > myPersonVector;
-    std::vector< std::pair< cVehicle, cPerson > > myAssign;
+    std::vector< std::vector< std::pair< cVehicle, cPerson > > > myAssign;
 
     bool FindType( const std::string& type_name,
                    cVehicleType& type )
@@ -254,7 +267,7 @@ int main()
     schedule_button.caption("SCHEDULE");
     schedule_button.events().click([&]
     {
-        theFleet.Schedule();
+        theFleet.Schedule( 5 );
         theFleet.Display( fleet_text );
     });
 
