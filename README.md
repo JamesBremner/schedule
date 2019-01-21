@@ -60,3 +60,6 @@ Pilot P dusts farm F(3} on 2017 06 10
 Pilot P dusts farm G(3} on 2017 06 10
 </pre>
 
+In progress is a GUI front end to help with scheduling crew to a fleet of vehicles
+
+![screenshot](https://github.com/JamesBremner/schedule/blob/master/doc/GUIScreenShot.PNG)
