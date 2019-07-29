@@ -278,11 +278,13 @@ public:
 
     bool Schedule( int shifts )
     {
+        // clear all previous assignments
         myAssign.clear();
 
         // loop over shifts
         for( int ks = 0; ks < shifts; ks++ )
         {
+            // clear previous shift's assignments
             for( auto& p : myPersonVector )
             {
                 p.Assign( false );
@@ -297,10 +299,12 @@ public:
                 cVehicleType vt;
                 if( ! FindType( v.Type(), vt ) )
                     throw std::runtime_error("Vehicle type error");
+
                 // loop over people needed by vehicle type
                 for( int kp = 0; kp < vt.Crew(); kp++ )
                 {
                     bool success = false;
+
                     // loop over people
                     for( auto& p : myPersonVector )
                     {
@@ -309,6 +313,7 @@ public:
                         if( p.Type() != vt.CrewType()[kp] )
                             continue;
 
+                        // assign person to vehicle
                         shift_assignments.push_back( std::pair< cVehicle, cPerson >( v, p ) );
                         p.Assign( true );
                         success = true;
