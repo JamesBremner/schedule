@@ -20,8 +20,22 @@ int main()
     //theFleet.Test();
 
     nana::menubar mb( fm );
+    nana::menu& mf = mb.push_back("File");
     nana::menu& md = mb.push_back("Domain");
     nana::menu& ms = mb.push_back("Specification");
+
+    mf.append("Read",[&theFleet, &ms](nana::menu::item_proxy& ip)
+    {
+        theFleet.Read();
+        ms.text(0,"Add " + theFleet.JobTerm() + " type");
+        ms.text(1,"Add " + theFleet.JobTerm());
+        ms.text(2,"Add " + theFleet.ResourceTerm() + " type");
+        ms.text(3,"Add " + theFleet.ResourceTerm());
+    });
+    mf.append("Write",[&theFleet](nana::menu::item_proxy& ip)
+    {
+        theFleet.Write();
+    });
     md.append("Problem Domain Terms", [fm, &theFleet, &ms](nana::menu::item_proxy& ip)
     {
         nana::inputbox::text job("Job term ( e.g. vehicle, machine, order, ...", "");
@@ -35,6 +49,7 @@ int main()
             ms.text(0,"Add " + theFleet.JobTerm() + " type");
             ms.text(1,"Add " + theFleet.JobTerm());
             ms.text(2,"Add " + theFleet.ResourceTerm() + " type");
+            ms.text(3,"Add " + theFleet.ResourceTerm());
         }
     });
 
@@ -42,9 +57,9 @@ int main()
     {
         theFleet.NewJobType( fm );
     });
-    ms.append("Add Job",[&fm, &theFleet](nana::menu::item_proxy& ip)
+    ms.append("Add Job",[ &theFleet](nana::menu::item_proxy& ip)
     {
-        theFleet.NewJob( fm );
+        theFleet.NewJob();
         theFleet.Display();
     });
     ms.append("Add Resource Type",[&fm, &theFleet](nana::menu::item_proxy& ip)
@@ -61,7 +76,7 @@ int main()
     schedule_button.caption("SCHEDULE");
     schedule_button.events().click([&]
     {
-        theFleet.Schedule( 5 );
+        theFleet.Schedule( 21 );
         theFleet.Display( );
     });
 

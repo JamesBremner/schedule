@@ -54,6 +54,7 @@
 			<Add directory="$(#boost.lib)" />
 		</Linker>
 		<Unit filename="FleetCrewGUI.cpp" />
+		<Unit filename="JobResource.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

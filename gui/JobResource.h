@@ -1,11 +1,11 @@
-class cVehicleType
+class cJobType
 {
 public:
-    cVehicleType()
+    cJobType()
     {
 
     }
-    cVehicleType( const std::string& name, int crew )
+    cJobType( const std::string& name, int crew )
         : myName( name)
         , myCrew( crew )
     {
@@ -33,10 +33,10 @@ private:
     std::vector< std::string > myCrewType;
 };
 
-class cVehicle
+class cJob
 {
 public:
-    cVehicle( const std::string& type,
+    cJob( const std::string& type,
               const std::string& plate )
         : myType( type )
         , myPlate( plate )
@@ -57,14 +57,14 @@ private:
     std::string myPlate;
 };
 
-class cPersonType
+class cResourceType
 {
 public:
-    cPersonType()
+    cResourceType()
     {
 
     }
-    cPersonType( const std::string& type )
+    cResourceType( const std::string& type )
         : myType( type )
     {
 
@@ -77,14 +77,15 @@ private:
     std::string myType;
 };
 
-class cPerson
+class cResource
 {
 public:
-    cPerson( const std::string& name,
-             const std::string& type )
+    cResource( const std::string& name,
+               const std::string& type )
         : myName( name )
         , myType( type )
         , myfAssign( false )
+        , myLastShift( -1 )
     {
 
     }
@@ -100,37 +101,57 @@ public:
     {
         return myType + " " + myName;
     }
-    void Assign( bool f )
+    void Assign( bool f, int shift = -1 )
     {
         myfAssign = f;
+        if( myfAssign )
+            myLastShift = shift;
     }
-    bool Assign()
+    bool Assign() const
     {
         return myfAssign;
+    }
+    int LastShift() const
+    {
+        return myLastShift;
+    }
+
+    /// True if available for a shift
+    bool IsAvailable( int shift ) const
+    {
+        if( myfAssign )
+            return false;
+        if( shift - myLastShift <= 2 )
+            return false;
+        return true;
     }
 private:
     std::string myName;
     std::string myType;
     bool myfAssign;
+    int myLastShift;
 };
 
 class cFleet
 {
 public:
     cFleet( nana::form& fm )
-    : fleet_text( fm, nana::rectangle( 10,100, 250, 350 ))
+        : myfm( fm )
+        , fleet_text( fm, nana::rectangle( 10,100, 250, 350 ))
     {
 
     }
-    void Add( const cVehicle& v )
+    void Read();
+    void Write();
+    void Add( const cJob& v )
     {
-        myFleet.push_back( v );
+        myJobVector.push_back( v );
     }
 
     void NewJobType( const nana::form& fm )
     {
         std::vector<std::string> type_names;
-        for( auto& t : myPersonTypeVector )
+        for( auto& t : myResourceTypeVector )
         {
             type_names.push_back( t.Type() );
         }
@@ -150,7 +171,7 @@ public:
                         , crewType4
                         , crewType5 ) )
         {
-            cVehicleType vt;
+            cJobType vt;
             if( FindType( name.value(), vt ))
             {
                 nana::msgbox msg("Already have this vehicle type");
@@ -158,7 +179,7 @@ public:
             }
             else
             {
-                myTypeVector.push_back( cVehicleType(
+                myTypeVector.push_back( cJobType(
                                             name.value(),
                                             crew.value() ) );
                 std::vector< std::string > types;
@@ -179,7 +200,7 @@ public:
 
         if( inbox.show( name ) )
         {
-            cPersonType pt;
+            cResourceType pt;
             if( FindPersonType( name.value(), pt ))
             {
                 nana::msgbox msg("Already have this person type");
@@ -187,32 +208,17 @@ public:
             }
             else
             {
-                myPersonTypeVector.push_back( cPersonType(
+                myResourceTypeVector.push_back( cResourceType(
                                                   name.value() ) );
             }
         }
     }
-    void NewJob( nana::form& fm )
-    {
-        std::vector<std::string> type_names;
-        for( auto& t : myTypeVector )
-        {
-            type_names.push_back( t.Name() );
-        }
-        nana::inputbox::text type("Type", type_names );
-        char plate_default[] { 65 + myFleet.size(), 0 };
-        nana::inputbox::text plate("Plate", std::string(plate_default));
-        nana::inputbox inbox( fm, myJobTerm + " Type to add" );
-        if( inbox.show(type, plate ) )
-        {
-            myFleet.push_back( cVehicle( type.value(), plate.value() ));
-        }
+    void NewJob();
 
-    }
     void NewResource( nana::form& fm )
     {
         std::vector<std::string> type_names;
-        for( auto& t : myPersonTypeVector )
+        for( auto& t : myResourceTypeVector )
         {
             type_names.push_back( t.Type() );
         }
@@ -228,7 +234,7 @@ public:
             }
             else
             {
-                myPersonVector.push_back( cPerson( name.value(), type.value() ));
+                myResourceVector.push_back( cResource( name.value(), type.value() ));
             }
         }
 
@@ -237,10 +243,10 @@ public:
     {
         fleet_text.select( true );
         fleet_text.del();
-        fleet_text.append(std::to_string( myFleet.size())+ " " + myJobTerm + ":\n", false);
-        for( auto& v : myFleet )
+        fleet_text.append(std::to_string( myJobVector.size())+ " " + myJobTerm + ":\n", false);
+        for( auto& v : myJobVector )
         {
-            cVehicleType vt;
+            cJobType vt;
             FindType( v.Type(), vt );
             std::vector<std::string> vn = vt.CrewType();
             fleet_text.append( v.Plate()+" "+v.Type()+" needs ", false );
@@ -248,8 +254,8 @@ public:
                 fleet_text.append( vn[kct]+" ",false);
             fleet_text.append("\n",false);
         }
-        fleet_text.append("\n" + std::to_string( myPersonVector.size())+ " " + myResourceTerm + ":\n", false);
-        for( auto& p : myPersonVector )
+        fleet_text.append("\n" + std::to_string( myResourceVector.size())+ " " + myResourceTerm + ":\n", false);
+        for( auto& p : myResourceVector )
         {
             fleet_text.append( p.Text() + "\n", false );
         }
@@ -276,21 +282,21 @@ public:
         myAssign.clear();
 
         // loop over shifts
-        for( int ks = 0; ks < shifts; ks++ )
+        for( int kshift = 0; kshift < shifts; kshift++ )
         {
             // clear previous shift's assignments
-            for( auto& p : myPersonVector )
+            for( auto& p : myResourceVector )
             {
                 p.Assign( false );
             }
 
             // the assignments for this shift
-            std::vector< std::pair< cVehicle, cPerson > > shift_assignments;
+            std::vector< std::pair< cJob, cResource > > shift_assignments;
 
             // loop over vehicles
-            for( auto& v : myFleet )
+            for( auto& v : myJobVector )
             {
-                cVehicleType vt;
+                cJobType vt;
                 if( ! FindType( v.Type(), vt ) )
                     throw std::runtime_error("Vehicle type error");
 
@@ -300,15 +306,15 @@ public:
                     bool success = false;
 
                     // loop over people
-                    for( auto& p : myPersonVector )
+                    for( auto& p : myResourceVector )
                     {
-                        if( p.Assign() )
+                        if( ! p.IsAvailable( kshift ) )
                             continue;
                         if( p.Type() != vt.CrewType()[kp] )
                             continue;
 
                         // assign person to vehicle
-                        shift_assignments.push_back( std::pair< cVehicle, cPerson >( v, p ) );
+                        shift_assignments.push_back( std::pair< cJob, cResource >( v, p ) );
                         p.Assign( true );
                         success = true;
                         break;
@@ -324,7 +330,7 @@ public:
             }
             myAssign.push_back( shift_assignments );
 
-            std::random_shuffle( myPersonVector.begin(), myPersonVector.end() );
+            std::random_shuffle( myResourceVector.begin(), myResourceVector.end() );
         }
         return true;
     }
@@ -347,28 +353,29 @@ public:
     }
     void Test()
     {
-        myPersonTypeVector.push_back( cPersonType("officer"));
-        myPersonTypeVector.push_back( cPersonType("firefighter"));
-        myTypeVector.push_back( cVehicleType("rescue",2));
+        myResourceTypeVector.push_back( cResourceType("officer"));
+        myResourceTypeVector.push_back( cResourceType("firefighter"));
+        myTypeVector.push_back( cJobType("rescue",2));
         myTypeVector.back().CrewType({"officer","firefighter"});
-        myFleet.push_back( cVehicle("rescue","A"));
-        myPersonVector.push_back( cPerson("Alice","officer"));
-        myPersonVector.push_back( cPerson("Bob","firefighter"));
+        myJobVector.push_back( cJob("rescue","A"));
+        myResourceVector.push_back( cResource("Alice","officer"));
+        myResourceVector.push_back( cResource("Bob","firefighter"));
     }
 
 private:
 
     std::string myJobTerm;
     std::string myResourceTerm;
-    std::vector< cVehicle > myFleet;
-    std::vector< cVehicleType > myTypeVector;
-    std::vector< cPerson > myPersonVector;
-    std::vector< cPersonType > myPersonTypeVector;
-    std::vector< std::vector< std::pair< cVehicle, cPerson > > > myAssign;
+    std::vector< cJob > myJobVector;
+    std::vector< cJobType > myTypeVector;
+    std::vector< cResource > myResourceVector;
+    std::vector< cResourceType > myResourceTypeVector;
+    std::vector< std::vector< std::pair< cJob, cResource > > > myAssign;
+    nana::form& myfm;
     nana::textbox fleet_text;
 
     bool FindType( const std::string& type_name,
-                   cVehicleType& type )
+                   cJobType& type )
     {
         for( auto& t : myTypeVector )
             if( t.Name() == type_name )
@@ -379,9 +386,9 @@ private:
         return false;
     }
     bool FindPersonType( const std::string& type_name,
-                         cPersonType& type )
+                         cResourceType& type )
     {
-        for( auto& t : myPersonTypeVector )
+        for( auto& t : myResourceTypeVector )
             if( t.Type() == type_name )
             {
                 type = t;
@@ -391,7 +398,7 @@ private:
     }
     bool FindPerson( const std::string& type )
     {
-        for( auto& p : myPersonVector )
+        for( auto& p : myResourceVector )
             if( p.Name() == type )
                 return true;
         return false;
