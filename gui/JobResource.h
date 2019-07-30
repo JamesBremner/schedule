@@ -113,8 +113,11 @@ public:
         return myLastShift;
     }
 
-    /// True if available for a shift
-    bool IsAvailable( int shift ) const;
+    /** True if available for a shift
+        @param[in] shift for potential assignment to
+        @param[in] rotation minimum number of shifts between assignments + 1
+    */
+    bool IsAvailable( int shift, int rotation ) const;
 
 private:
     std::string myName;
@@ -126,12 +129,7 @@ private:
 class cFleet
 {
 public:
-    cFleet( nana::form& fm )
-        : myfm( fm )
-        , fleet_text( fm, nana::rectangle( 10,100, 250, 350 ))
-    {
-
-    }
+    cFleet( nana::form& fm );
     void Read();
     void Write();
     void Add( const cJob& v )
@@ -230,42 +228,7 @@ public:
         }
 
     }
-    void Display(  )
-    {
-        fleet_text.select( true );
-        fleet_text.del();
-        fleet_text.append(std::to_string( myJobVector.size())+ " " + myJobTerm + ":\n", false);
-        for( auto& v : myJobVector )
-        {
-            cJobType vt;
-            FindType( v.Type(), vt );
-            std::vector<std::string> vn = vt.CrewType();
-            fleet_text.append( v.Plate()+" "+v.Type()+" needs ", false );
-            for( int kct=0; kct<vt.Crew(); kct++)
-                fleet_text.append( vn[kct]+" ",false);
-            fleet_text.append("\n",false);
-        }
-        fleet_text.append("\n" + std::to_string( myResourceVector.size())+ " " + myResourceTerm + ":\n", false);
-        for( auto& p : myResourceVector )
-        {
-            fleet_text.append( p.Text() + "\n", false );
-        }
-        if( myAssign.size() )
-        {
-            int ks = 1;
-            for( auto& sa : myAssign )
-            {
-                fleet_text.append("\nSchedule Shift "+std::to_string(ks++)+":\n",
-                                  false);
-                for( auto& a : sa )
-                {
-                    fleet_text.append(
-                        a.second.Name()+" in "+a.first.Type()+" plate "+a.first.Plate()+" "+"\n",
-                        false);
-                }
-            }
-        }
-    }
+    void Display(  );
 
     bool Schedule( int shifts )
     {
@@ -299,7 +262,7 @@ public:
                     // loop over people
                     for( auto& p : myResourceVector )
                     {
-                        if( ! p.IsAvailable( kshift ) )
+                        if( ! p.IsAvailable( kshift, myShiftRotation ) )
                             continue;
                         if( p.Type() != vt.CrewType()[kp] )
                             continue;
@@ -357,6 +320,7 @@ private:
 
     std::string myJobTerm;
     std::string myResourceTerm;
+    int myShiftRotation;
     std::vector< cJob > myJobVector;
     std::vector< cJobType > myTypeVector;
     std::vector< cResource > myResourceVector;
