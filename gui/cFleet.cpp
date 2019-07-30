@@ -174,6 +174,8 @@ void cFleet::Display(  )
     for( int ks = 1; ks <= myAssign.size(); ks++ )
         l << std::setw(4) <<  std::to_string( ks );
     l << "\n";
+
+    // loop over resources
     for( auto& r : myResourceVector )
     {
         l << std::setw(5) << r.Name() << " ";
@@ -186,20 +188,21 @@ void cFleet::Display(  )
             std::string sep = " ";
             if( ! (ks % 3) )
                 sep = "|";
+            std::cout << ks << " " << sep << "\n";
+            bool assigned = false;
             // loop over assignments in shift
             for( auto& a : sa )
             {
-                bool assigned = false;
-                if( a.second.Name() == r.Name() )
+                 if( a.second.Name() == r.Name() )
                 {
                     l << std::setw(3) << a.first.Plate() << sep;
                     assigned = true;
                     break;
                 }
-                if( ! assigned )
-                {
-                    l << "..." << sep;
-                }
+            }
+            if( ! assigned )
+            {
+                l << "..." << sep;
             }
         }
         l << "\n";
