@@ -7,6 +7,8 @@
 
 #include "raven_sqlite.h"
 
+#define INSTRUMENT 1
+
 void cFleet::Write()
 {
     nana::filebox fb( myfm, false );
@@ -31,8 +33,8 @@ void cFleet::Write()
         for( auto& jr : jt.CrewType() )
         {
             if( jr.length() )
-            DB.Query("INSERT INTO job_resource VALUES ( %d, '%s' );",
-                     jti, jr.c_str() );
+                DB.Query("INSERT INTO job_resource VALUES ( %d, '%s' );",
+                         jti, jr.c_str() );
         }
         jti++;
     }
@@ -80,7 +82,7 @@ void cFleet::Read()
     for( auto& n : jtv )
     {
         DB.Query("SELECT resource FROM job_resource WHERE type = %d",
-                jti++ );
+                 jti++ );
         cJobType jt( n, DB.myResultA.size() );
         jt.CrewType( DB.myResultA );
         myTypeVector.push_back( jt );
@@ -97,24 +99,49 @@ void cFleet::Read()
     ret = DB.Query("SELECT * FROM resource;");
     for( int kr = 0; kr < ret; kr++ )
     {
-        myResourceVector.push_back( cResource( DB.myResultA[kr*2+1], DB.myResultA[kr*2]));
+        myResourceVector.push_back( cResource( DB.myResultA[kr*2], DB.myResultA[kr*2+1]));
     }
 
     Display();
 }
-    void cFleet::NewJob()
+void cFleet::NewJob()
+{
+    std::vector<std::string> type_names;
+    for( auto& t : myTypeVector )
     {
-        std::vector<std::string> type_names;
-        for( auto& t : myTypeVector )
-        {
-            type_names.push_back( t.Name() );
-        }
-        nana::inputbox::text type("Type", type_names );
-        char plate_default[] { 65 + myJobVector.size(), 0 };
-        nana::inputbox::text plate("Plate", std::string(plate_default));
-        nana::inputbox inbox( myfm, myJobTerm + " Type to add" );
-        if( inbox.show(type, plate ) )
-        {
-            myJobVector.push_back( cJob( type.value(), plate.value() ));
-        }
+        type_names.push_back( t.Name() );
     }
+    nana::inputbox::text type("Type", type_names );
+    char plate_default[] { 65 + myJobVector.size(), 0 };
+    nana::inputbox::text plate("Plate", std::string(plate_default));
+    nana::inputbox inbox( myfm, myJobTerm + " Type to add" );
+    if( inbox.show(type, plate ) )
+    {
+        myJobVector.push_back( cJob( type.value(), plate.value() ));
+    }
+}
+void cResource::Assign( bool f, int shift )
+{
+    myfAssign = f;
+    if( myfAssign )
+        myLastShift = shift;
+#ifdef INSTRUMENT
+    if( myfAssign )
+        std::cout << myName << " " << myfAssign << " " << shift << "\n";
+#endif
+}
+
+bool cResource::IsAvailable( int shift ) const
+{
+    bool ret;
+    if( myfAssign )
+        ret = false;
+    else if( shift - myLastShift <= 2 )
+        ret = false;
+    else
+        ret = true;
+#ifdef INSTRUMENT
+    std::cout << myName << " not available shift " << shift << "\n";
+#endif // INSTRUMENT
+    return ret;
+}

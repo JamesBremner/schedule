@@ -85,7 +85,7 @@ public:
         : myName( name )
         , myType( type )
         , myfAssign( false )
-        , myLastShift( -1 )
+        , myLastShift( -10 )
     {
 
     }
@@ -101,12 +101,9 @@ public:
     {
         return myType + " " + myName;
     }
-    void Assign( bool f, int shift = -1 )
-    {
-        myfAssign = f;
-        if( myfAssign )
-            myLastShift = shift;
-    }
+
+    void Assign( bool f, int shift = -1 );
+
     bool Assign() const
     {
         return myfAssign;
@@ -117,14 +114,8 @@ public:
     }
 
     /// True if available for a shift
-    bool IsAvailable( int shift ) const
-    {
-        if( myfAssign )
-            return false;
-        if( shift - myLastShift <= 2 )
-            return false;
-        return true;
-    }
+    bool IsAvailable( int shift ) const;
+
 private:
     std::string myName;
     std::string myType;
@@ -315,7 +306,7 @@ public:
 
                         // assign person to vehicle
                         shift_assignments.push_back( std::pair< cJob, cResource >( v, p ) );
-                        p.Assign( true );
+                        p.Assign( true, kshift );
                         success = true;
                         break;
                     }
