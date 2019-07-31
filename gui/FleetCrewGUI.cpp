@@ -36,7 +36,7 @@ int main()
     {
         theFleet.Write();
     });
-    md.append("Problem Domain Terms", [fm, &theFleet, &ms](nana::menu::item_proxy& ip)
+    md.append("Terms", [fm, &theFleet, &ms](nana::menu::item_proxy& ip)
     {
         nana::inputbox::text job("Job term ( e.g. vehicle, machine, order, ...", "");
         nana::inputbox::text resource("Resource term ( e.g. person, ...", "");
@@ -52,10 +52,19 @@ int main()
             ms.text(3,"Add " + theFleet.ResourceTerm());
         }
     });
-
-    ms.append("Add Job Type",[fm, &theFleet](nana::menu::item_proxy& ip)
+    md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)
     {
-        theFleet.NewJobType( fm );
+        nana::inputbox::integer rotation("Minimum shifts between assignments", 2, 0, 21, 1 );
+        nana::inputbox inbox(fm,"Input");
+        if (inbox.show_modal( rotation ) )
+        {
+            theFleet.Rotation( rotation.value() );
+        }
+    });
+
+    ms.append("Add Job Type",[ &theFleet](nana::menu::item_proxy& ip)
+    {
+        theFleet.NewJobType();
     });
     ms.append("Add Job",[ &theFleet](nana::menu::item_proxy& ip)
     {
@@ -66,9 +75,9 @@ int main()
     {
         theFleet.NewResourceType( fm );
     });
-    ms.append("Add Resource",[&fm, &theFleet](nana::menu::item_proxy& ip)
+    ms.append("Add Resource",[ &theFleet ](nana::menu::item_proxy& ip)
     {
-        theFleet.NewResource( fm );
+        theFleet.NewResource();
         theFleet.Display();
     });
 

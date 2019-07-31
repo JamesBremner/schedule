@@ -8,6 +8,7 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="../bin/FleetCrewGUI" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../bin" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -18,6 +19,7 @@
 			</Target>
 			<Target title="Release">
 				<Option output="../bin/FleetCrewGUI" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../bin" />
 				<Option object_output="obj/Release/" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -38,6 +40,8 @@
 			<Add option="-D_WIN32_WINNT=0x0501" />
 			<Add directory="$(#nana.include)" />
 			<Add directory="." />
+			<Add directory="../src/ext" />
+			<Add directory="$(#ravenset)" />
 		</Compiler>
 		<Linker>
 			<Add option="-static-libstdc++" />
@@ -53,8 +57,14 @@
 			<Add directory="$(#nana.lib)" />
 			<Add directory="$(#boost.lib)" />
 		</Linker>
+		<Unit filename="../../raven-set/raven_sqlite.cpp" />
+		<Unit filename="../../raven-set/raven_sqlite.h" />
+		<Unit filename="../src/ext/sqlite3.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="FleetCrewGUI.cpp" />
 		<Unit filename="JobResource.h" />
+		<Unit filename="cFleet.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

@@ -137,50 +137,8 @@ public:
         myJobVector.push_back( v );
     }
 
-    void NewJobType( const nana::form& fm )
-    {
-        std::vector<std::string> type_names;
-        for( auto& t : myResourceTypeVector )
-        {
-            type_names.push_back( t.Type() );
-        }
-        nana::inputbox::text name("Name", "");
-        nana::inputbox::integer crew("Number of crew",3,1,10,1);
-        nana::inputbox::text crewType1("Crew Type 1", type_names );
-        nana::inputbox::text crewType2("Crew Type 2", type_names );
-        nana::inputbox::text crewType3("Crew Type 3", type_names );
-        nana::inputbox::text crewType4("Crew Type 4", type_names );
-        nana::inputbox::text crewType5("Crew Type 5", type_names );
-        nana::inputbox inbox( fm, "New " + JobTerm() + " Type" );
+    void NewJobType();
 
-        if( inbox.show( name, crew
-                        , crewType1
-                        , crewType2
-                        , crewType3
-                        , crewType4
-                        , crewType5 ) )
-        {
-            cJobType vt;
-            if( FindType( name.value(), vt ))
-            {
-                nana::msgbox msg("Already have this vehicle type");
-                msg.show();
-            }
-            else
-            {
-                myTypeVector.push_back( cJobType(
-                                            name.value(),
-                                            crew.value() ) );
-                std::vector< std::string > types;
-                types.push_back( crewType1.value() );
-                types.push_back( crewType2.value() );
-                types.push_back( crewType3.value() );
-                types.push_back( crewType4.value() );
-                types.push_back( crewType5.value() );
-                myTypeVector.back().CrewType( types );
-            }
-        }
-    }
     void NewResourceType( nana::form& fm )
     {
         nana::inputbox::text name("Name of type", "");
@@ -204,31 +162,9 @@ public:
     }
     void NewJob();
 
-    void NewResource( nana::form& fm )
-    {
-        std::vector<std::string> type_names;
-        for( auto& t : myResourceTypeVector )
-        {
-            type_names.push_back( t.Type() );
-        }
-        nana::inputbox::text name("Name", "");
-        nana::inputbox::text type("Type", type_names );
-        nana::inputbox inbox( fm, "New " + myResourceTerm );
-        if( inbox.show( name, type ) )
-        {
-            if( FindPerson( name.value() ))
-            {
-                nana::msgbox msg("Already have person with this name");
-                msg.show();
-            }
-            else
-            {
-                myResourceVector.push_back( cResource( name.value(), type.value() ));
-            }
-        }
+    void NewResource();
 
-    }
-    void Display(  );
+    void Display();
 
     bool Schedule( int shifts )
     {
@@ -305,6 +241,10 @@ public:
     {
         return myResourceTerm;
     }
+    void Rotation( int r )
+    {
+        myShiftRotation = r;
+    }
     void Test()
     {
         myResourceTypeVector.push_back( cResourceType("officer"));
@@ -330,16 +270,8 @@ private:
     nana::textbox fleet_text;
 
     bool FindType( const std::string& type_name,
-                   cJobType& type )
-    {
-        for( auto& t : myTypeVector )
-            if( t.Name() == type_name )
-            {
-                type = t;
-                return true;
-            }
-        return false;
-    }
+                   cJobType& type );
+
     bool FindPersonType( const std::string& type_name,
                          cResourceType& type )
     {

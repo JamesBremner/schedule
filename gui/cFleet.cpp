@@ -12,7 +12,9 @@
 #define INSTRUMENT 1
 
 cFleet::cFleet( nana::form& fm )
-    : myfm( fm )
+    : myJobTerm( "Job" )
+    , myResourceTerm( "Resource" )
+    , myfm( fm )
     , myShiftRotation( 3 )
     , fleet_text( fm, nana::rectangle( 10,100, 550, 300 ))
 
@@ -115,6 +117,65 @@ void cFleet::Read()
 
     Display();
 }
+void cFleet::NewJobType()
+{
+#ifdef INSTRUMENT
+    std::cout << "NewJobType\nJob Types\n";
+    for( auto& j : myTypeVector )
+        std::cout << j.Name() << " ";
+    std::cout << "\nResource Types\n";
+    for( auto& r : myResourceTypeVector )
+        std::cout << r.Type() << " ";
+    std::cout << "\n";
+    Display();
+#endif // INSTRUMENT
+
+
+    std::vector<std::string> type_names;
+    for( auto& t : myResourceTypeVector )
+    {
+        type_names.push_back( t.Type() );
+    }
+    nana::inputbox::text name("Name", "");
+    nana::inputbox::integer crew("Number of crew",3,1,10,1);
+    nana::inputbox::text crewType1("Crew Type 1", type_names );
+    nana::inputbox::text crewType2("Crew Type 2", type_names );
+    nana::inputbox::text crewType3("Crew Type 3", type_names );
+    nana::inputbox::text crewType4("Crew Type 4", type_names );
+    nana::inputbox::text crewType5("Crew Type 5", type_names );
+    nana::inputbox inbox( myfm, "New " + JobTerm() + " Type" );
+
+    if( inbox.show( name, crew
+                    , crewType1
+                    , crewType2
+                    , crewType3
+                    , crewType4
+                    , crewType5 ) )
+    {
+        cJobType vt;
+        if( FindType( name.value(), vt ))
+        {
+            nana::msgbox msg("Already have this vehicle type");
+            msg.show();
+        }
+        else
+        {
+            myTypeVector.push_back( cJobType(
+                                        name.value(),
+                                        crew.value() ) );
+            std::vector< std::string > types;
+            types.push_back( crewType1.value() );
+            types.push_back( crewType2.value() );
+            types.push_back( crewType3.value() );
+            types.push_back( crewType4.value() );
+            types.push_back( crewType5.value() );
+            myTypeVector.back().CrewType( types );
+        }
+    }
+    Display();
+}
+
+
 void cFleet::NewJob()
 {
     std::vector<std::string> type_names;
@@ -130,6 +191,55 @@ void cFleet::NewJob()
     {
         myJobVector.push_back( cJob( type.value(), plate.value() ));
     }
+}
+
+void cFleet::NewResource()
+{
+    std::vector<std::string> type_names;
+    for( auto& t : myResourceTypeVector )
+    {
+        type_names.push_back( t.Type() );
+    }
+    nana::inputbox::text name("Name", "");
+    nana::inputbox::text type("Type", type_names );
+    nana::inputbox inbox( myfm, "New " + myResourceTerm );
+    if( inbox.show( name, type ) )
+    {
+        if( FindPerson( name.value() ))
+        {
+            nana::msgbox msg("Already have person with this name");
+            msg.show();
+        }
+        else
+        {
+            myResourceVector.push_back( cResource( name.value(), type.value() ));
+        }
+    }
+
+}
+
+bool cFleet::FindType( const std::string& type_name,
+                       cJobType& type )
+{
+#ifdef INSTRUMENT
+    std::cout << type_name << " in ";
+#endif // INSTRUMENT
+
+    for( auto& t : myTypeVector )
+    {
+#ifdef INSTRUMENT
+        std::cout << t.Name() << " ";
+#endif // INSTRUMENT
+        if( t.Name() == type_name )
+        {
+            type = t;
+            return true;
+        }
+    }
+#ifdef INSTRUMENT
+    std::cout  << "not found\n";
+#endif // INSTRUMENT
+    return false;
 }
 
 void cFleet::Display(  )
@@ -153,25 +263,9 @@ void cFleet::Display(  )
         fleet_text.append( p.Text() + "\n", false );
     }
 
-//    if( myAssign.size() )
-//    {
-//        int ks = 1;
-//        for( auto& sa : myAssign )
-//        {
-//            fleet_text.append("\nSchedule Shift "+std::to_string(ks++)+":\n",
-//                              false);
-//            for( auto& a : sa )
-//            {
-//                fleet_text.append(
-//                    a.second.Name()+" in "+a.first.Type()+" plate "+a.first.Plate()+" "+"\n",
-//                    false);
-//            }
-//        }
-//    }
-
     std::stringstream l;
     l << "\nShift";
-    for( int ks = 1; ks <= myAssign.size(); ks++ )
+    for( int ks = 1; ks <= (int)myAssign.size(); ks++ )
         l << std::setw(4) <<  std::to_string( ks );
     l << "\n";
 
@@ -188,12 +282,11 @@ void cFleet::Display(  )
             std::string sep = " ";
             if( ! (ks % 3) )
                 sep = "|";
-            std::cout << ks << " " << sep << "\n";
             bool assigned = false;
             // loop over assignments in shift
             for( auto& a : sa )
             {
-                 if( a.second.Name() == r.Name() )
+                if( a.second.Name() == r.Name() )
                 {
                     l << std::setw(3) << a.first.Plate() << sep;
                     assigned = true;
