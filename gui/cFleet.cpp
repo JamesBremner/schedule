@@ -117,6 +117,21 @@ void cFleet::Read()
 
     Display();
 }
+
+void cFleet::JobEditor()
+{
+    std::vector< std::string > jobNames;
+    for( auto& j : myJobVector )
+        jobNames.push_back( j.Plate() );
+    nana::inputbox::text job("Job",jobNames);
+    nana::inputbox::boolean del("Delete",false);
+    nana::inputbox inbox( myfm, "Select Job to edit");
+    if( inbox.show( job, del ) )
+    {
+
+    }
+}
+
 void cFleet::NewJobType()
 {
 #ifdef INSTRUMENT

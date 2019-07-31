@@ -12,7 +12,7 @@
 int main()
 {
     // construct application form
-    nana::form fm( nana::rectangle( 100,100, 300, 450 ));
+    nana::form fm( nana::rectangle( 100,100, 500, 450 ));
     fm.caption("Scheduler");
 
     cFleet theFleet( fm );
@@ -81,7 +81,25 @@ int main()
         theFleet.Display();
     });
 
-    nana::button schedule_button( fm, nana::rectangle( 10, 50, 100, 20 ) );
+    nana::button job_button( fm, nana::rectangle(10, 50, 100, 20));
+    job_button.caption("JOBS");
+    job_button.events().click([&]
+    {
+        theFleet.JobEditor();
+    });
+    nana::button resource_button( fm, nana::rectangle(110, 50, 100, 20));
+    resource_button.caption("RESOURCES");
+    resource_button.events().click([&]
+    {
+        theFleet.ResourceEditor();
+    });
+    nana::button constraint_button( fm, nana::rectangle(210, 50, 100, 20));
+    constraint_button.caption("CONSTRAINTS");
+    constraint_button.events().click([&]
+    {
+        theFleet.ConstraintEditor();
+    });
+    nana::button schedule_button( fm, nana::rectangle( 350, 50, 100, 20 ) );
     schedule_button.caption("SCHEDULE");
     schedule_button.events().click([&]
     {

@@ -132,6 +132,10 @@ public:
     cFleet( nana::form& fm );
     void Read();
     void Write();
+
+    void ResourceEditor() {}
+    void JobEditor();
+    void ConstraintEditor() {}
     void Add( const cJob& v )
     {
         myJobVector.push_back( v );
