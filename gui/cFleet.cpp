@@ -133,16 +133,20 @@ void cFleet::JobEditor()
     nana::combox cb(  fm, nana::rectangle(x_entry,50,100,20));
     for( auto& j : myJobVector )
         cb.push_back( j.Name() );
+    nana::button add_button( fm, nana::rectangle(230, 50, 60, 20));
+    add_button.caption("Add Job");
 
     nana::label lbname( fm, nana::rectangle(20,90,100,20));
     lbname.caption("Name");
     nana::textbox jname( fm, nana::rectangle(x_entry,90, 100, 20 ));
     nana::label lbtype( fm, nana::rectangle(20,120,100,20));
     lbtype.caption("Type");
-    nana::textbox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
+    nana::combox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
+    for( auto& t : myTypeVector )
+        jtype.push_back( t.Name() );
+    nana::button add_type(fm, nana::rectangle(230, 120, 60, 20));
+    add_type.caption("Add Type");
 
-    nana::button add_button( fm, nana::rectangle(20, 260, 70, 20));
-    add_button.caption("ADD");
     nana::button sv(fm, nana::rectangle(120, 260, 70, 20));
     sv.caption("SAVE");
     nana::button done(fm, nana::rectangle(220, 260, 70, 20));
@@ -155,21 +159,31 @@ void cFleet::JobEditor()
         cb.push_back( j.Name() );
         cb.option( myJobVector.size()-1);
     });
+    add_type.events().click([this]
+    {
+        NewJobType();
+    });
     cb.events().selected([&,this](const nana:: arg_combox&arg)
     {
+        // clear old selection
         jname.select(true);
         jname.del();
-        jname.append( myJobVector[cb.option()].Name(), false);
-        jtype.select(true);
-        jtype.del();
-        jtype.append( myJobVector[cb.option()].Type(), false);
+
+        cJob& j = myJobVector[cb.option()];
+        jname.append( j.Name(), false);
+        cJobType t;
+        int i;
+        if( FindType( j.Type(), t, i ))
+        {
+            jtype.option( i );
+        }
     });
     sv.events().click([&,this]
     {
         int d1 = cb.option();
         int d2 = myJobVector.size();
         myJobVector[cb.option()].Name( jname.text() );
-        myJobVector[cb.option()].Type( jtype.text() );
+        myJobVector[cb.option()].Type( jtype.text( jtype.option() ) );
     });
     done.events().click([&fm]
     {
@@ -275,7 +289,8 @@ void cFleet::NewJobType()
                     , crewType5 ) )
     {
         cJobType vt;
-        if( FindType( name.value(), vt ))
+        int i;
+        if( FindType( name.value(), vt, i ))
         {
             nana::msgbox msg("Already have this vehicle type");
             msg.show();
@@ -340,13 +355,16 @@ void cFleet::NewResource()
 
 }
 
-bool cFleet::FindType( const std::string& type_name,
-                       cJobType& type )
+bool cFleet::FindType(
+                      const std::string& type_name,
+                       cJobType& type,
+                       int& index )
 {
 #ifdef INSTRUMENT
     std::cout << type_name << " in ";
 #endif // INSTRUMENT
 
+    index = 0;
     for( auto& t : myTypeVector )
     {
 #ifdef INSTRUMENT
@@ -357,6 +375,7 @@ bool cFleet::FindType( const std::string& type_name,
             type = t;
             return true;
         }
+        index++;
     }
 #ifdef INSTRUMENT
     std::cout  << "not found\n";
@@ -376,7 +395,8 @@ void cFleet::Display(  )
     {
         fleet_text.append( v.Name()+" "+v.Type(), false );
         cJobType vt;
-        if( ! FindType( v.Type(), vt ) )
+        int i;
+        if( ! FindType( v.Type(), vt, i ) )
             continue;
         std::vector<std::string> vn = vt.CrewType();
         fleet_text.append( " needs ", false );

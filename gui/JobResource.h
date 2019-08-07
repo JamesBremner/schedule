@@ -37,7 +37,7 @@ class cJob
 {
 public:
     cJob( const std::string& name,
-         const std::string& type )
+          const std::string& type )
         : myType( type )
         , myName( name )
     {
@@ -176,7 +176,7 @@ public:
             else
             {
                 myResourceTypeVector.push_back( cResourceType(
-                                                  name.value() ) );
+                                                    name.value() ) );
             }
         }
     }
@@ -207,7 +207,8 @@ public:
             for( auto& v : myJobVector )
             {
                 cJobType vt;
-                if( ! FindType( v.Type(), vt ) )
+                int i;
+                if( ! FindType( v.Type(), vt, i ) )
                     throw std::runtime_error("Vehicle type error");
 
                 // loop over people needed by vehicle type
@@ -289,8 +290,16 @@ private:
     nana::form& myfm;
     nana::textbox fleet_text;
 
-    bool FindType( const std::string& type_name,
-                   cJobType& type );
+    /** Search job types by name
+        @param[in] type_name
+        @param[out] type reference to job trype found
+        @param[out] index of job type found
+        @return true if job type found
+    */
+    bool FindType(
+        const std::string& type_name,
+        cJobType& type,
+        int& index );
 
     bool FindPersonType( const std::string& type_name,
                          cResourceType& type )
