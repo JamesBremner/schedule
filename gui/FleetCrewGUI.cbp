@@ -47,12 +47,12 @@
 			<Add option="-static-libgcc" />
 			<Add option="-static" />
 			<Add option="-m64" />
-			<Add option="-lstdc++fs" />
 			<Add library="nana" />
 			<Add library="gdi32" />
 			<Add library="comdlg32" />
 			<Add library="ws2_32" />
 			<Add library="wsock32" />
+			<Add library="stdc++fs" />
 			<Add directory="$(#nana.lib)" />
 			<Add directory="$(#boost.lib)" />
 		</Linker>

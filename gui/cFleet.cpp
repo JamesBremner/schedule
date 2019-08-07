@@ -366,15 +366,20 @@ bool cFleet::FindType( const std::string& type_name,
 
 void cFleet::Display(  )
 {
+    // clear previous display
     fleet_text.select( true );
     fleet_text.del();
+
+    // display jobs
     fleet_text.append(std::to_string( myJobVector.size())+ " " + myJobTerm + ":\n", false);
     for( auto& v : myJobVector )
     {
+        fleet_text.append( v.Name()+" "+v.Type(), false );
         cJobType vt;
-        FindType( v.Type(), vt );
+        if( ! FindType( v.Type(), vt ) )
+            continue;
         std::vector<std::string> vn = vt.CrewType();
-        fleet_text.append( v.Name()+" "+v.Type()+" needs ", false );
+        fleet_text.append( " needs ", false );
         for( int kct=0; kct<vt.Crew(); kct++)
             fleet_text.append( vn[kct]+" ",false);
         fleet_text.append("\n",false);
