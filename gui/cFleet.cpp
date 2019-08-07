@@ -109,7 +109,7 @@ void cFleet::Read()
     ret = DB.Query("SELECT * FROM job;");
     for( int kj = 0; kj < ret; kj++ )
     {
-        myJobVector.push_back( cJob( DB.myResultA[kj*2+1], DB.myResultA[kj*2] ) );
+        myJobVector.push_back( cJob( DB.myResultA[kj*2], DB.myResultA[kj*2+1] ) );
     }
 
     myResourceVector.clear();
@@ -150,7 +150,7 @@ void cFleet::JobEditor()
 
     add_button.events().click([&]
     {
-        cJob j( "?", "Job"+std::to_string( myJobVector.size() ) );
+        cJob j("Job"+std::to_string( myJobVector.size() ), "?" );
         myJobVector.push_back( j );
         cb.push_back( j.Name() );
         cb.option( myJobVector.size()-1);
@@ -179,6 +179,65 @@ void cFleet::JobEditor()
 
     fm.modality();
 }
+
+void cFleet::ResourceEditor()
+{
+    nana::form fm( nana::rectangle( 100,100, 300, 300 ));
+    fm.caption("Resource Editor");
+
+    int x_entry = 120;
+    nana::label lbcb( fm, nana::rectangle(20,50,100,20));
+    lbcb.caption("Select Resource");
+    nana::combox cb(  fm, nana::rectangle(x_entry,50,100,20));
+    for( auto& j : myResourceVector )
+        cb.push_back( j.Name() );
+
+    nana::label lbname( fm, nana::rectangle(20,90,100,20));
+    lbname.caption("Name");
+    nana::textbox jname( fm, nana::rectangle(x_entry,90, 100, 20 ));
+    nana::label lbtype( fm, nana::rectangle(20,120,100,20));
+    lbtype.caption("Type");
+    nana::textbox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
+
+    nana::button add_button( fm, nana::rectangle(20, 260, 70, 20));
+    add_button.caption("ADD");
+    nana::button sv(fm, nana::rectangle(120, 260, 70, 20));
+    sv.caption("SAVE");
+    nana::button done(fm, nana::rectangle(220, 260, 70, 20));
+    done.caption("DONE");
+
+    add_button.events().click([&]
+    {
+        cResource j( "Res"+std::to_string( myResourceVector.size()), "?" );
+        myResourceVector.push_back( j );
+        cb.push_back( j.Name() );
+        cb.option( myResourceVector.size()-1);
+    });
+    cb.events().selected([&,this](const nana:: arg_combox&arg)
+    {
+        jname.select(true);
+        jname.del();
+        jname.append( myResourceVector[cb.option()].Name(), false);
+        jtype.select(true);
+        jtype.del();
+        jtype.append( myResourceVector[cb.option()].Type(), false);
+    });
+    sv.events().click([&,this]
+    {
+        int d1 = cb.option();
+        int d2 = myResourceVector.size();
+        myResourceVector[cb.option()].Name( jname.text() );
+        myResourceVector[cb.option()].Type( jtype.text() );
+    });
+    done.events().click([&fm]
+    {
+        nana::API::close_window( fm ) ;
+    });
+
+
+    fm.modality();
+}
+
 
 void cFleet::NewJobType()
 {
@@ -241,19 +300,19 @@ void cFleet::NewJobType()
 
 void cFleet::NewJob()
 {
-    std::vector<std::string> type_names;
-    for( auto& t : myTypeVector )
-    {
-        type_names.push_back( t.Name() );
-    }
-    nana::inputbox::text type("Type", type_names );
-    char plate_default[] { 65 + myJobVector.size(), 0 };
-    nana::inputbox::text plate("Plate", std::string(plate_default));
-    nana::inputbox inbox( myfm, myJobTerm + " Type to add" );
-    if( inbox.show(type, plate ) )
-    {
-        myJobVector.push_back( cJob( type.value(), plate.value() ));
-    }
+//    std::vector<std::string> type_names;
+//    for( auto& t : myTypeVector )
+//    {
+//        type_names.push_back( t.Name() );
+//    }
+//    nana::inputbox::text type("Type", type_names );
+//    char plate_default[] { 65 + myJobVector.size(), 0 };
+//    nana::inputbox::text plate("Plate", std::string(plate_default));
+//    nana::inputbox inbox( myfm, myJobTerm + " Type to add" );
+//    if( inbox.show(type, plate ) )
+//    {
+//        myJobVector.push_back( cJob( type.value(), plate.value() ));
+//    }
 }
 
 void cFleet::NewResource()

@@ -36,8 +36,8 @@ private:
 class cJob
 {
 public:
-    cJob( const std::string& type,
-              const std::string& name )
+    cJob( const std::string& name,
+         const std::string& type )
         : myType( type )
         , myName( name )
     {
@@ -101,9 +101,17 @@ public:
     {
         return myName;
     }
+    void Name( const std::string& n )
+    {
+        myName = n;
+    }
     std::string Type()
     {
         return myType;
+    }
+    void Type( const std::string& t )
+    {
+        myType = t;
     }
     std::string Text()
     {
@@ -141,7 +149,7 @@ public:
     void Read();
     void Write();
 
-    void ResourceEditor() {}
+    void ResourceEditor();
     void JobEditor();
     void ConstraintEditor() {}
     void Add( const cJob& v )
@@ -259,13 +267,13 @@ public:
     }
     void Test()
     {
-        myResourceTypeVector.push_back( cResourceType("officer"));
-        myResourceTypeVector.push_back( cResourceType("firefighter"));
-        myTypeVector.push_back( cJobType("rescue",2));
-        myTypeVector.back().CrewType({"officer","firefighter"});
-        myJobVector.push_back( cJob("rescue","A"));
-        myResourceVector.push_back( cResource("Alice","officer"));
-        myResourceVector.push_back( cResource("Bob","firefighter"));
+//        myResourceTypeVector.push_back( cResourceType("officer"));
+//        myResourceTypeVector.push_back( cResourceType("firefighter"));
+//        myTypeVector.push_back( cJobType("rescue",2));
+//        myTypeVector.back().CrewType({"officer","firefighter"});
+//        myJobVector.push_back( cJob("rescue","A"));
+//        myResourceVector.push_back( cResource("Alice","officer"));
+//        myResourceVector.push_back( cResource("Bob","firefighter"));
     }
 
 private:
