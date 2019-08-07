@@ -5,6 +5,10 @@
 #include <nana/gui.hpp>
 #include <nana/gui/widgets/textbox.hpp>
 #include <nana/gui/filebox.hpp>
+#include <nana/gui/widgets/button.hpp>
+#include  <nana/gui/widgets/combox.hpp>
+#include <nana/gui/widgets/label.hpp>
+
 #include "JobResource.h"
 
 #include "raven_sqlite.h"
@@ -63,7 +67,7 @@ void cFleet::Write()
     for( auto& j : myJobVector )
     {
         DB.Query("INSERT INTO job VALUES ( '%s', '%s' );",
-                 j.Plate().c_str(), j.Type().c_str() );
+                 j.Name().c_str(), j.Type().c_str() );
     }
     DB.Query("CREATE TABLE resource ( name, type );");
     DB.Query("DELETE FROM resource;");
@@ -120,16 +124,60 @@ void cFleet::Read()
 
 void cFleet::JobEditor()
 {
-    std::vector< std::string > jobNames;
-    for( auto& j : myJobVector )
-        jobNames.push_back( j.Plate() );
-    nana::inputbox::text job("Job",jobNames);
-    nana::inputbox::boolean del("Delete",false);
-    nana::inputbox inbox( myfm, "Select Job to edit");
-    if( inbox.show( job, del ) )
-    {
+    nana::form fm( nana::rectangle( 100,100, 300, 300 ));
+    fm.caption("Job Editor");
 
-    }
+    int x_entry = 120;
+    nana::label lbcb( fm, nana::rectangle(20,50,100,20));
+    lbcb.caption("Select Job");
+    nana::combox cb(  fm, nana::rectangle(x_entry,50,100,20));
+    for( auto& j : myJobVector )
+        cb.push_back( j.Name() );
+
+    nana::label lbname( fm, nana::rectangle(20,90,100,20));
+    lbname.caption("Name");
+    nana::textbox jname( fm, nana::rectangle(x_entry,90, 100, 20 ));
+    nana::label lbtype( fm, nana::rectangle(20,120,100,20));
+    lbtype.caption("Type");
+    nana::textbox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
+
+    nana::button add_button( fm, nana::rectangle(20, 260, 70, 20));
+    add_button.caption("ADD");
+    nana::button sv(fm, nana::rectangle(120, 260, 70, 20));
+    sv.caption("SAVE");
+    nana::button done(fm, nana::rectangle(220, 260, 70, 20));
+    done.caption("DONE");
+
+    add_button.events().click([&]
+    {
+        cJob j( "?", "Job"+std::to_string( myJobVector.size() ) );
+        myJobVector.push_back( j );
+        cb.push_back( j.Name() );
+        cb.option( myJobVector.size()-1);
+    });
+    cb.events().selected([&,this](const nana:: arg_combox&arg)
+    {
+        jname.select(true);
+        jname.del();
+        jname.append( myJobVector[cb.option()].Name(), false);
+        jtype.select(true);
+        jtype.del();
+        jtype.append( myJobVector[cb.option()].Type(), false);
+    });
+    sv.events().click([&,this]
+    {
+        int d1 = cb.option();
+        int d2 = myJobVector.size();
+        myJobVector[cb.option()].Name( jname.text() );
+        myJobVector[cb.option()].Type( jtype.text() );
+    });
+    done.events().click([&fm]
+    {
+        nana::API::close_window( fm ) ;
+    });
+
+
+    fm.modality();
 }
 
 void cFleet::NewJobType()
@@ -267,7 +315,7 @@ void cFleet::Display(  )
         cJobType vt;
         FindType( v.Type(), vt );
         std::vector<std::string> vn = vt.CrewType();
-        fleet_text.append( v.Plate()+" "+v.Type()+" needs ", false );
+        fleet_text.append( v.Name()+" "+v.Type()+" needs ", false );
         for( int kct=0; kct<vt.Crew(); kct++)
             fleet_text.append( vn[kct]+" ",false);
         fleet_text.append("\n",false);
@@ -303,7 +351,7 @@ void cFleet::Display(  )
             {
                 if( a.second.Name() == r.Name() )
                 {
-                    l << std::setw(3) << a.first.Plate() << sep;
+                    l << std::setw(3) << a.first.Name() << sep;
                     assigned = true;
                     break;
                 }

@@ -37,9 +37,9 @@ class cJob
 {
 public:
     cJob( const std::string& type,
-              const std::string& plate )
+              const std::string& name )
         : myType( type )
-        , myPlate( plate )
+        , myName( name )
     {
 
     }
@@ -47,14 +47,22 @@ public:
     {
         return myType;
     }
-    std::string Plate()
+    void Type( const std::string& t )
     {
-        return myPlate;
+        myType = t;
+    }
+    std::string Name()
+    {
+        return myName;
+    }
+    void Name( const std::string n )
+    {
+        myName = n;
     }
 
 private:
     std::string myType;
-    std::string myPlate;
+    std::string myName;
 };
 
 class cResourceType
