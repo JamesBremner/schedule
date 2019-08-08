@@ -326,6 +326,7 @@ void cFleet::NewJobType()
             types.push_back( crewType3.value() );
             types.push_back( crewType4.value() );
             types.push_back( crewType5.value() );
+            types.resize( crew.value() );
             myTypeVector.back().CrewType( types );
         }
     }
