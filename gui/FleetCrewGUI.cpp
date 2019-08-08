@@ -43,15 +43,15 @@ int main()
             theFleet.ResourceTerm( resource.value() );
         }
     });
-    md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)
-    {
-        nana::inputbox::integer rotation("Minimum shifts between assignments", 2, 0, 21, 1 );
-        nana::inputbox inbox(fm,"Input");
-        if (inbox.show_modal( rotation ) )
-        {
-            theFleet.Rotation( rotation.value() );
-        }
-    });
+//    md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)
+//    {
+//        nana::inputbox::integer rotation("Minimum shifts between assignments", 2, 0, 21, 1 );
+//        nana::inputbox inbox(fm,"Input");
+//        if (inbox.show_modal( rotation ) )
+//        {
+//            theFleet.Rotation( rotation.value() );
+//        }
+//    });
 
     nana::button job_button( fm, nana::rectangle(10, 50, 100, 20));
     job_button.caption("JOBS");
@@ -71,7 +71,7 @@ int main()
     constraint_button.caption("CONSTRAINTS");
     constraint_button.events().click([&]
     {
-        theFleet.ConstraintEditor();
+        theFleet.ConstraintEditor(fm);
     });
     nana::button schedule_button( fm, nana::rectangle( 350, 50, 100, 20 ) );
     schedule_button.caption("SCHEDULE");

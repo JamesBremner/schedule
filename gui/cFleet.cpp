@@ -80,6 +80,7 @@ void cFleet::Write()
 
 void cFleet::Read()
 {
+
     nana::filebox fb( myfm, true );
     auto paths = fb();
     if( paths.empty() )
@@ -199,6 +200,16 @@ void cFleet::JobEditor()
 
 
     fm.modality();
+}
+
+void cFleet::ConstraintEditor( nana::form& fm )
+{
+    nana::inputbox::integer rotation("Minimum shifts between assignments", 2, 0, 21, 1 );
+    nana::inputbox inbox(fm,"Input","Constraint Editor");
+    if (inbox.show_modal( rotation ) )
+    {
+        Rotation( rotation.value() );
+    }
 }
 
 void cFleet::ResourceEditor()

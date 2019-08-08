@@ -151,7 +151,7 @@ public:
 
     void ResourceEditor();
     void JobEditor();
-    void ConstraintEditor() {}
+    void ConstraintEditor(nana::form& fm);
     void Add( const cJob& v )
     {
         myJobVector.push_back( v );
