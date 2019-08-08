@@ -22,21 +22,16 @@ int main()
     nana::menubar mb( fm );
     nana::menu& mf = mb.push_back("File");
     nana::menu& md = mb.push_back("Domain");
-    nana::menu& ms = mb.push_back("Specification");
 
-    mf.append("Read",[&theFleet, &ms](nana::menu::item_proxy& ip)
+    mf.append("Read",[&theFleet](nana::menu::item_proxy& ip)
     {
         theFleet.Read();
-//        ms.text(0,"Add " + theFleet.JobTerm() + " type");
-//        ms.text(1,"Add " + theFleet.JobTerm());
-//        ms.text(0,"Add " + theFleet.ResourceTerm() + " type");
-//        ms.text(1,"Add " + theFleet.ResourceTerm());
     });
     mf.append("Write",[&theFleet](nana::menu::item_proxy& ip)
     {
         theFleet.Write();
     });
-    md.append("Terms", [fm, &theFleet, &ms](nana::menu::item_proxy& ip)
+    md.append("Terms", [fm, &theFleet](nana::menu::item_proxy& ip)
     {
         nana::inputbox::text job("Job term ( e.g. vehicle, machine, order, ...", "");
         nana::inputbox::text resource("Resource term ( e.g. person, ...", "");
@@ -46,10 +41,6 @@ int main()
         {
             theFleet.JobTerm( job.value() );
             theFleet.ResourceTerm( resource.value() );
-            //ms.text(0,"Add " + theFleet.JobTerm() + " type");
-//ms.text(1,"Add " + theFleet.JobTerm());
-//            ms.text(0,"Add " + theFleet.ResourceTerm() + " type");
-//            ms.text(1,"Add " + theFleet.ResourceTerm());
         }
     });
     md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)

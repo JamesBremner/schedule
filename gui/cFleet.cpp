@@ -20,7 +20,7 @@ cFleet::cFleet( nana::form& fm )
     , myResourceTerm( "Resource" )
     , myfm( fm )
     , myShiftRotation( 3 )
-    , fleet_text( fm, nana::rectangle( 10,100, 550, 300 ))
+    , fleet_text( fm, nana::rectangle( 10,100, 750, 400 ))
 
 {
     fleet_text.typeface(  nana::paint::font("Courier", 10) );
