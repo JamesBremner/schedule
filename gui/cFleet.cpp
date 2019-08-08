@@ -60,7 +60,7 @@ void cFleet::Write()
     for( auto& rt : myResourceTypeVector )
     {
         DB.Query("INSERT INTO resource_type VALUES ( '%s' );",
-                 rt.Type().c_str() );
+                 rt.Name().c_str() );
     }
     DB.Query("CREATE TABLE job ( name, type );");
     DB.Query("DELETE FROM job;");
@@ -117,6 +117,13 @@ void cFleet::Read()
     for( int kr = 0; kr < ret; kr++ )
     {
         myResourceVector.push_back( cResource( DB.myResultA[kr*2], DB.myResultA[kr*2+1]));
+    }
+
+    myResourceTypeVector.clear();
+    ret = DB.Query("SELECT * FROM resource_type;");
+    for( int kr = 0; kr < ret; kr++ )
+    {
+        myResourceTypeVector.push_back( cResourceType( DB.myResultA[kr] ));
     }
 
     Display();
@@ -205,16 +212,20 @@ void cFleet::ResourceEditor()
     nana::combox cb(  fm, nana::rectangle(x_entry,50,100,20));
     for( auto& j : myResourceVector )
         cb.push_back( j.Name() );
+    nana::button add_button( fm, nana::rectangle(230, 50, 60, 20));
+    add_button.caption("Add Resource");
 
     nana::label lbname( fm, nana::rectangle(20,90,100,20));
     lbname.caption("Name");
     nana::textbox jname( fm, nana::rectangle(x_entry,90, 100, 20 ));
     nana::label lbtype( fm, nana::rectangle(20,120,100,20));
     lbtype.caption("Type");
-    nana::textbox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
+    nana::combox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
+    for( auto& t : myResourceTypeVector )
+        jtype.push_back( t.Name() );
+    nana::button add_type(fm, nana::rectangle(230, 120, 60, 20));
+    add_type.caption("Add Type");
 
-    nana::button add_button( fm, nana::rectangle(20, 260, 70, 20));
-    add_button.caption("ADD");
     nana::button sv(fm, nana::rectangle(120, 260, 70, 20));
     sv.caption("SAVE");
     nana::button done(fm, nana::rectangle(220, 260, 70, 20));
@@ -231,17 +242,26 @@ void cFleet::ResourceEditor()
     {
         jname.select(true);
         jname.del();
-        jname.append( myResourceVector[cb.option()].Name(), false);
-        jtype.select(true);
-        jtype.del();
-        jtype.append( myResourceVector[cb.option()].Type(), false);
+        cResource& R = myResourceVector[cb.option()];
+        jname.append( R.Name(), false);
+
+        cResourceType r;
+        int i;
+        if( FindResourceType( R.Type(), r, i ))
+        {
+            jtype.option( i );
+        }
     });
     sv.events().click([&,this]
     {
         int d1 = cb.option();
         int d2 = myResourceVector.size();
         myResourceVector[cb.option()].Name( jname.text() );
-        myResourceVector[cb.option()].Type( jtype.text() );
+        myResourceVector[cb.option()].Type( jtype.text( jtype.option() ) );
+    });
+    add_type.events().click([this,&fm]
+    {
+        NewResourceType( fm );
     });
     done.events().click([&fm]
     {
@@ -261,7 +281,7 @@ void cFleet::NewJobType()
         std::cout << j.Name() << " ";
     std::cout << "\nResource Types\n";
     for( auto& r : myResourceTypeVector )
-        std::cout << r.Type() << " ";
+        std::cout << r.Name() << " ";
     std::cout << "\n";
     Display();
 #endif // INSTRUMENT
@@ -270,7 +290,7 @@ void cFleet::NewJobType()
     std::vector<std::string> type_names;
     for( auto& t : myResourceTypeVector )
     {
-        type_names.push_back( t.Type() );
+        type_names.push_back( t.Name() );
     }
     nana::inputbox::text name("Name", "");
     nana::inputbox::integer crew("Number of crew",3,1,10,1);
@@ -335,7 +355,7 @@ void cFleet::NewResource()
     std::vector<std::string> type_names;
     for( auto& t : myResourceTypeVector )
     {
-        type_names.push_back( t.Type() );
+        type_names.push_back( t.Name() );
     }
     nana::inputbox::text name("Name", "");
     nana::inputbox::text type("Type", type_names );
@@ -356,9 +376,9 @@ void cFleet::NewResource()
 }
 
 bool cFleet::FindType(
-                      const std::string& type_name,
-                       cJobType& type,
-                       int& index )
+    const std::string& type_name,
+    cJobType& type,
+    int& index )
 {
 #ifdef INSTRUMENT
     std::cout << type_name << " in ";
@@ -383,6 +403,24 @@ bool cFleet::FindType(
     return false;
 }
 
+bool cFleet::FindResourceType(
+    const std::string& name,
+    cResourceType& type,
+    int& index )
+{
+    index = 0;
+    for( auto& t : myResourceTypeVector )
+    {
+        if( t.Name() == name )
+        {
+            type = t;
+            return true;
+        }
+        index++;
+    }
+    return false;
+}
+
 void cFleet::Display(  )
 {
     // clear previous display
@@ -404,10 +442,12 @@ void cFleet::Display(  )
             fleet_text.append( vn[kct]+" ",false);
         fleet_text.append("\n",false);
     }
+
+    // display resources
     fleet_text.append("\n" + std::to_string( myResourceVector.size())+ " " + myResourceTerm + ":\n", false);
     for( auto& p : myResourceVector )
     {
-        fleet_text.append( p.Text() + "\n", false );
+        fleet_text.append( p.Name() +" "+ p.Type() + "\n", false );
     }
 
     std::stringstream l;

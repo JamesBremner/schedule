@@ -72,17 +72,17 @@ public:
     {
 
     }
-    cResourceType( const std::string& type )
-        : myType( type )
+    cResourceType( const std::string& n )
+        : myName( n )
     {
 
     }
-    std::string Type()
+    std::string Name()
     {
-        return myType;
+        return myName;
     }
 private:
-    std::string myType;
+    std::string myName;
 };
 
 class cResource
@@ -168,9 +168,10 @@ public:
         if( inbox.show( name ) )
         {
             cResourceType pt;
-            if( FindPersonType( name.value(), pt ))
+            int i;
+            if( FindResourceType( name.value(), pt, i ))
             {
-                nana::msgbox msg("Already have this person type");
+                nana::msgbox msg("Already have this resource type");
                 msg.show();
             }
             else
@@ -301,17 +302,11 @@ private:
         cJobType& type,
         int& index );
 
-    bool FindPersonType( const std::string& type_name,
-                         cResourceType& type )
-    {
-        for( auto& t : myResourceTypeVector )
-            if( t.Type() == type_name )
-            {
-                type = t;
-                return true;
-            }
-        return false;
-    }
+    bool FindResourceType(
+        const std::string& name,
+        cResourceType& type,
+        int& index );
+
     bool FindPerson( const std::string& type )
     {
         for( auto& p : myResourceVector )

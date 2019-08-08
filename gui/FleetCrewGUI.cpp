@@ -27,10 +27,10 @@ int main()
     mf.append("Read",[&theFleet, &ms](nana::menu::item_proxy& ip)
     {
         theFleet.Read();
-        ms.text(0,"Add " + theFleet.JobTerm() + " type");
-        ms.text(1,"Add " + theFleet.JobTerm());
-        ms.text(2,"Add " + theFleet.ResourceTerm() + " type");
-        ms.text(3,"Add " + theFleet.ResourceTerm());
+//        ms.text(0,"Add " + theFleet.JobTerm() + " type");
+//        ms.text(1,"Add " + theFleet.JobTerm());
+//        ms.text(0,"Add " + theFleet.ResourceTerm() + " type");
+//        ms.text(1,"Add " + theFleet.ResourceTerm());
     });
     mf.append("Write",[&theFleet](nana::menu::item_proxy& ip)
     {
@@ -46,10 +46,10 @@ int main()
         {
             theFleet.JobTerm( job.value() );
             theFleet.ResourceTerm( resource.value() );
-            ms.text(0,"Add " + theFleet.JobTerm() + " type");
-            ms.text(1,"Add " + theFleet.JobTerm());
-            ms.text(2,"Add " + theFleet.ResourceTerm() + " type");
-            ms.text(3,"Add " + theFleet.ResourceTerm());
+            //ms.text(0,"Add " + theFleet.JobTerm() + " type");
+//ms.text(1,"Add " + theFleet.JobTerm());
+//            ms.text(0,"Add " + theFleet.ResourceTerm() + " type");
+//            ms.text(1,"Add " + theFleet.ResourceTerm());
         }
     });
     md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)
@@ -62,36 +62,19 @@ int main()
         }
     });
 
-    ms.append("Add Job Type",[ &theFleet](nana::menu::item_proxy& ip)
-    {
-        theFleet.NewJobType();
-    });
-    ms.append("Add Job",[ &theFleet](nana::menu::item_proxy& ip)
-    {
-        theFleet.NewJob();
-        theFleet.Display();
-    });
-    ms.append("Add Resource Type",[&fm, &theFleet](nana::menu::item_proxy& ip)
-    {
-        theFleet.NewResourceType( fm );
-    });
-    ms.append("Add Resource",[ &theFleet ](nana::menu::item_proxy& ip)
-    {
-        theFleet.NewResource();
-        theFleet.Display();
-    });
-
     nana::button job_button( fm, nana::rectangle(10, 50, 100, 20));
     job_button.caption("JOBS");
     job_button.events().click([&]
     {
         theFleet.JobEditor();
+        theFleet.Display();
     });
     nana::button resource_button( fm, nana::rectangle(110, 50, 100, 20));
     resource_button.caption("RESOURCES");
     resource_button.events().click([&]
     {
         theFleet.ResourceEditor();
+        theFleet.Display();
     });
     nana::button constraint_button( fm, nana::rectangle(210, 50, 100, 20));
     constraint_button.caption("CONSTRAINTS");
