@@ -1,0 +1,7 @@
+r Alice canUseDrill
+r Bob canUseDigger
+r Chad canUseDrill
+r Derek canUseDigger
+j A canUseDrill canUseDigger
+j B canUseDigger
+j C canUseDrill

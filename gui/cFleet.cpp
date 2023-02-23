@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
 
@@ -16,13 +17,14 @@
 
 #include "raven_sqlite.h"
 
-#define INSTRUMENT 1
+// #define INSTRUMENT 1
 
 cFleet::cFleet(wex::gui &fm)
-    : myJobTerm("Job"), myResourceTerm("Resource"), myfm(fm), myShiftRotation(3), fleet_text(wex::maker::make<wex::label>(fm))
+    : myJobTerm("Site"), myResourceTerm("Resource"), myfm(fm), myShiftRotation(3), fleet_text(wex::maker::make<wex::label>(fm))
 
 {
-    fleet_text.move(10, 100, 750, 400);
+    fleet_text.move(10, 100, 750, 800);
+    fleet_text.bgcolor(0xFFFFFF);
     fleet_text.fontName("Courier");
     fleet_text.text("");
 }
@@ -44,7 +46,7 @@ void cFleet::Write()
     DB.Query("CREATE TABLE job_resource ( type, resource );");
     DB.Query("DELETE FROM job_resource;");
     int jti = 0;
-    for (auto &jt : myTypeVector)
+    for (auto &jt : myJobTypeVector)
     {
         DB.Query("INSERT INTO job_type VALUES ( '%s' );",
                  jt.Name().c_str());
@@ -94,7 +96,7 @@ void cFleet::Read()
     myJobTerm = DB.myResultA[0];
     myResourceTerm = DB.myResultA[1];
 
-    myTypeVector.clear();
+    myJobTypeVector.clear();
     ret = DB.Query("SELECT * FROM job_type;");
     std::vector<std::string> jtv = DB.myResultA;
     int jti = 0;
@@ -104,7 +106,7 @@ void cFleet::Read()
                  jti++);
         cJobType jt(n, DB.myResultA.size());
         jt.CrewType(DB.myResultA);
-        myTypeVector.push_back(jt);
+        myJobTypeVector.push_back(jt);
     }
 
     myJobVector.clear();
@@ -154,7 +156,7 @@ void cFleet::JobEditor()
     // nana::label lbtype( fm, nana::rectangle(20,120,100,20));
     // lbtype.caption("Type");
     // nana::combox jtype( fm, nana::rectangle(x_entry,120, 100, 20 ));
-    // for( auto& t : myTypeVector )
+    // for( auto& t : myJobTypeVector )
     //     jtype.push_back( t.Name() );
 
     wex::button &add_type = wex::maker::make<wex::button>(fm);
@@ -289,7 +291,7 @@ void cFleet::NewJobType()
 {
     // #ifdef INSTRUMENT
     //     std::cout << "NewJobType\nJob Types\n";
-    //     for( auto& j : myTypeVector )
+    //     for( auto& j : myJobTypeVector )
     //         std::cout << j.Name() << " ";
     //     std::cout << "\nResource Types\n";
     //     for( auto& r : myResourceTypeVector )
@@ -328,7 +330,7 @@ void cFleet::NewJobType()
     //         }
     //         else
     //         {
-    //             myTypeVector.push_back( cJobType(
+    //             myJobTypeVector.push_back( cJobType(
     //                                         name.value(),
     //                                         crew.value() ) );
     //             std::vector< std::string > types;
@@ -338,7 +340,7 @@ void cFleet::NewJobType()
     //             types.push_back( crewType4.value() );
     //             types.push_back( crewType5.value() );
     //             types.resize( crew.value() );
-    //             myTypeVector.back().CrewType( types );
+    //             myJobTypeVector.back().CrewType( types );
     //         }
     //     }
     //     Display();
@@ -347,7 +349,7 @@ void cFleet::NewJobType()
 void cFleet::NewJob()
 {
     //    std::vector<std::string> type_names;
-    //    for( auto& t : myTypeVector )
+    //    for( auto& t : myJobTypeVector )
     //    {
     //        type_names.push_back( t.Name() );
     //    }
@@ -395,7 +397,7 @@ bool cFleet::FindType(
 #endif // INSTRUMENT
 
     index = 0;
-    for (auto &t : myTypeVector)
+    for (auto &t : myJobTypeVector)
     {
 #ifdef INSTRUMENT
         std::cout << t.Name() << " ";
@@ -435,12 +437,12 @@ void cFleet::Test()
 {
     myResourceTypeVector.push_back(cResourceType("canUseDrill"));
     myResourceTypeVector.push_back(cResourceType("canUseDigger"));
-    myTypeVector.push_back(cJobType("SiteA", 2));
-    myTypeVector.back().CrewType({"canUseDrill", "canUseDigger"});
-    myTypeVector.push_back(cJobType("SiteB", 1));
-    myTypeVector.back().CrewType({"canUseDrill"});
-    myTypeVector.push_back(cJobType("SiteC", 1));
-    myTypeVector.back().CrewType({"canUseDigger"});
+    myJobTypeVector.push_back(cJobType("SiteA", 2));
+    myJobTypeVector.back().CrewType({"canUseDrill", "canUseDigger"});
+    myJobTypeVector.push_back(cJobType("SiteB", 1));
+    myJobTypeVector.back().CrewType({"canUseDrill"});
+    myJobTypeVector.push_back(cJobType("SiteC", 1));
+    myJobTypeVector.back().CrewType({"canUseDigger"});
     myJobVector.push_back(cJob("A", "SiteA"));
     myJobVector.push_back(cJob("B", "SiteB"));
     myJobVector.push_back(cJob("C", "SiteC"));
@@ -450,80 +452,181 @@ void cFleet::Test()
     myResourceVector.push_back(cResource("Derek", "canUseDigger"));
 }
 
-    bool cFleet::Schedule( int shifts )
-    {
-        // clear all previous assignments
-        myAssign.clear();
+static std::vector<std::string> tokenize(const std::string &line)
+{
+    std::vector<std::string> ret;
+    std::stringstream sst(line);
+    std::string a;
+    while (getline(sst, a, ' '))
+        ret.push_back(a);
+    return ret;
+}
 
-        // loop over shifts
-        for( int kshift = 0; kshift < shifts; kshift++ )
+void cFleet::ReadSimpleText()
+{
+    wex::filebox fb(myfm);
+    auto paths = fb.open();
+    if (paths.empty())
+        return;
+
+    myResourceTypeVector.clear();
+    myResourceVector.clear();
+    myJobTypeVector.clear();
+    myJobVector.clear();
+
+    std::ifstream ifs(paths);
+    if (!ifs.is_open())
+        throw std::runtime_error(
+            "Cannot open file");
+
+    std::string line;
+    while (getline(ifs, line))
+    {
+        auto tokens = tokenize(line);
+        if (tokens[0] == "r")
         {
-            // clear previous shift's assignments
-            for( auto& p : myResourceVector )
-            {
-                p.Assign( false );
+            if( tokens.size() == 2 ) {
+                myResourceVector.push_back(cResource(tokens[1],""));
+                continue;
             }
 
-            // the assignments for this shift
-            std::vector< std::pair< cJob, cResource > > shift_assignments;
-
-            // loop over jobs
-            for( auto& v : myJobVector )
-            {
-                std::cout << "assigning to job " << v.Name() << "\n";
-                cJobType vt;
-                int i;
-                if( ! FindType( v.Type(), vt, i ) )
-                    throw std::runtime_error("Job type error");
-
-                // loop over people needed by vehicle type
-                for( int kp = 0; kp < vt.Crew(); kp++ )
+            bool found = false;
+            for (auto &rt : myResourceTypeVector)
+                if (rt.Name() == tokens[2])
                 {
-                    bool success = false;
+                    found = true;
+                    break;
+                }
+            if (!found)
+                myResourceTypeVector.push_back(cResourceType(tokens[2]));
 
-                    // loop over people
-                    for( auto& p : myResourceVector )
-                    {
-                        if( ! p.IsAvailable( kshift, myShiftRotation ) )
-                            continue;
-                        if( p.Type() != vt.CrewType()[kp] )
-                            continue;
+            myResourceVector.push_back(cResource(tokens[1], tokens[2]));
+        }
+        else if (tokens[0] == "j")
+        {
+            std::vector<std::string> vneeds(tokens.begin() + 3, tokens.end());
+            myJobTypeVector.push_back(cJobType(tokens[1], vneeds.size()));
+            myJobTypeVector.back().CrewType(vneeds);
+            myJobTypeVector.back().GeneralCount(atoi(tokens[2].c_str()));
+            myJobVector.push_back(cJob(tokens[1], tokens[1]));
+        }
+    }
+}
 
-                        // assign resource to job
-                        std::cout << "assigning " << p.Name() << " to " << v.Name() << "\n";
-                        shift_assignments.push_back( std::pair< cJob, cResource >( v, p ) );
-                        p.Assign( true, kshift );
-                        success = true;
-                        break;
-                    }
-                    if( ! success )
-                    {
-                        wex::msgbox msg("Not enough people to crew the fleet");
-                        myAssign.clear();
-                        return false;
-                    }
+bool cFleet::Schedule(int shifts)
+{
+    // clear all previous assignments
+    myAssign.clear();
+
+    // loop over shifts
+    for (int kshift = 0; kshift < shifts; kshift++)
+    {
+        // clear previous shift's assignments
+        for (auto &p : myResourceVector)
+        {
+            p.Assign(false);
+        }
+
+        // the assignments for this shift
+        std::vector<std::pair<cJob, cResource>> shift_assignments;
+
+        // loop over jobs
+        for (auto &v : myJobVector)
+        {
+            std::cout << "assigning resources to job " << v.Name() << "\n";
+            cJobType vt;
+            int i;
+            if (!FindType(v.Type(), vt, i))
+                throw std::runtime_error("Job type error");
+
+            // loop over resources needed by type
+            for (int kp = 0; kp < vt.Crew(); kp++)
+            {
+                bool success = false;
+
+                // loop over people
+                for (auto &p : myResourceVector)
+                {
+                    if (!p.IsAvailable(kshift, myShiftRotation))
+                        continue;
+                    if (p.Type() != vt.CrewType()[kp])
+                        continue;
+
+                    // assign resource to job
+                    std::cout << "assigning " << p.Name() << " to " << v.Name() << "\n";
+                    shift_assignments.push_back(std::pair<cJob, cResource>(v, p));
+                    p.Assign(true, kshift);
+                    success = true;
+                    break;
+                }
+                if (!success)
+                {
+                    wex::msgbox msg("Insufficient resources");
+                    myAssign.clear();
+                    return false;
                 }
             }
-            myAssign.push_back( shift_assignments );
-
-            std::random_shuffle( myResourceVector.begin(), myResourceVector.end() );
         }
-        return true;
+
+        // assign general workers
+        for (auto &v : myJobVector)
+        {
+            std::cout << "assigning general to job " << v.Name() << "\n";
+            cJobType jt;
+            int i;
+            if (!FindType(v.Type(), jt, i))
+                throw std::runtime_error("Job type error");
+
+            // count specialized workers assigned
+            int count = 0;
+            for (auto &p : shift_assignments)
+            {
+                if (p.first.Name() == v.Name())
+                    count++;
+            }
+            int generalNeed = jt.GeneralCount() - count;
+            if( ! generalNeed )
+                continue;
+            bool success = false;
+            for (int k = 0; k < generalNeed; k++)
+            {
+                for (auto &p : myResourceVector)
+                {
+                    if (!p.IsAvailable(kshift, myShiftRotation))
+                        continue;
+
+                // assign resource to job
+                std::cout << "assigning " << p.Name() << " to " << v.Name() << "\n";
+                shift_assignments.push_back(std::pair<cJob, cResource>(v, p));
+                p.Assign(true, kshift);
+                success = true;
+                break;
+                }
+            }
+            if (!success)
+            {
+                wex::msgbox msg("Insufficient resources");
+                myAssign.clear();
+                return false;
+            }
+        }
+
+        myAssign.push_back(shift_assignments);
+
+        std::random_shuffle(myResourceVector.begin(), myResourceVector.end());
     }
+    return true;
+}
 
 void cFleet::Display()
 {
-    //     // clear previous display
-    //     fleet_text.select( true );
-    //     fleet_text.del();
-
     std::stringstream ss;
 
     //     // display jobs
     ss << std::to_string(myJobVector.size()) + " " + myJobTerm + ":\n";
     for (auto &v : myJobVector)
     {
-        ss << v.Name() + " " + v.Type();
+        ss << v.Name();
         cJobType vt;
         int i;
         if (!FindType(v.Type(), vt, i))
@@ -532,7 +635,7 @@ void cFleet::Display()
         ss << " needs ";
         for (int kct = 0; kct < vt.Crew(); kct++)
             ss << vn[kct] << " ";
-        ss << "\n";
+        ss << " and "<< vt.GeneralCount() - vn.size() << " general workers\n";
     }
 
     //     // display resources
@@ -545,13 +648,13 @@ void cFleet::Display()
 
     ss << "\nShift";
     for (int ks = 1; ks <= (int)myAssign.size(); ks++)
-        ss << std::setw(4) << std::to_string(ks);
+        ss << std::setw(8) << std::to_string(ks);
     ss << "\n";
 
     // loop over resources
     for (auto &r : myResourceVector)
     {
-        ss << std::setw(5) << r.Name() << " ";
+        ss << std::setw(7) << r.Name() << " ";
 
         // loop over shifts
         int ks = 0;
@@ -567,7 +670,7 @@ void cFleet::Display()
             {
                 if (a.second.Name() == r.Name())
                 {
-                    ss << std::setw(3) << a.first.Name() << sep;
+                    ss << std::setw(6) << a.first.Name() << sep;
                     assigned = true;
                     break;
                 }
@@ -586,13 +689,13 @@ void cFleet::Display()
 
 void cResource::Assign(bool f, int shift)
 {
-        myfAssign = f;
-        if( myfAssign )
-            myLastShift = shift;
-    #ifdef INSTRUMENT
-        if( myfAssign )
-            std::cout << myName << " " << myfAssign << " " << shift << "\n";
-    #endif
+    myfAssign = f;
+    if (myfAssign)
+        myLastShift = shift;
+#ifdef INSTRUMENT
+    if (myfAssign)
+        std::cout << myName << " " << myfAssign << " " << shift << "\n";
+#endif
 }
 
 bool cResource::IsAvailable(int shift, int rotation) const

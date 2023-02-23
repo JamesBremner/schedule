@@ -1,0 +1,23 @@
+r Alice canUseDrill
+r Bob canUseDigger
+r Chad canUseDrill
+r Derek canUseDigger
+r Eric canUseDrill
+r Fiona canUseDigger
+r George canUseDrill
+r Hal canUseDigger
+r gw1
+r gw2
+r gw3
+r gw4
+r gw5
+r gw6
+r gw7
+r gw8
+r gw9
+j A 4 canUseDrill canUseDigger
+j B 3 canUseDigger
+j C 2 canUseDrill
+j D 4 canUseDrill canUseDigger
+j E 2 canUseDigger
+j F 2 canUseDrill

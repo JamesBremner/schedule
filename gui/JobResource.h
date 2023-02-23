@@ -27,9 +27,18 @@ public:
     {
         return myCrewType;
     }
+    void GeneralCount( int count )
+    {
+        myGeneralCount = count;
+    }
+    int GeneralCount() const
+    {
+        return myGeneralCount;
+    }
 private:
     std::string myName;
     int myCrew;
+    int myGeneralCount;
     std::vector< std::string > myCrewType;
 };
 
@@ -147,6 +156,7 @@ class cFleet
 public:
     cFleet( wex::gui& fm );
     void Read();
+    void ReadSimpleText();
     void Write();
 
     void ResourceEditor();
@@ -218,7 +228,7 @@ private:
     std::string myResourceTerm;
     int myShiftRotation;
     std::vector< cJob > myJobVector;
-    std::vector< cJobType > myTypeVector;
+    std::vector< cJobType > myJobTypeVector;
     std::vector< cResource > myResourceVector;
     std::vector< cResourceType > myResourceTypeVector;
     std::vector< std::vector< std::pair< cJob, cResource > > > myAssign;

@@ -13,15 +13,14 @@ int main()
 
     cFleet theFleet(fm);
 
-    theFleet.Test();
+    //theFleet.Test();
 
     wex::menubar mb(fm);
     wex::menu mf(fm);
     mf.append("Read",
               [&](const std::string &title)
               {
-                  std::cout << "read\n";
-                  theFleet.Read();
+                  theFleet.ReadSimpleText();
               });
     mf.append("Write", [&](const std::string &title)
               { theFleet.Write(); });
