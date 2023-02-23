@@ -145,13 +145,13 @@ private:
 class cFleet
 {
 public:
-    cFleet( nana::form& fm );
+    cFleet( wex::gui& fm );
     void Read();
     void Write();
 
     void ResourceEditor();
     void JobEditor();
-    void ConstraintEditor(nana::form& fm);
+    void ConstraintEditor(wex::gui& fm);
     void Add( const cJob& v )
     {
         myJobVector.push_back( v );
@@ -159,27 +159,27 @@ public:
 
     void NewJobType();
 
-    void NewResourceType( nana::form& fm )
+    void NewResourceType( wex::gui& fm )
     {
-        nana::inputbox::text name("Name of type", "");
+        // nana::inputbox::text name("Name of type", "");
 
-        nana::inputbox inbox( fm, "New Person Type" );
+        // nana::inputbox inbox( fm, "New Person Type" );
 
-        if( inbox.show( name ) )
-        {
-            cResourceType pt;
-            int i;
-            if( FindResourceType( name.value(), pt, i ))
-            {
-                nana::msgbox msg("Already have this resource type");
-                msg.show();
-            }
-            else
-            {
-                myResourceTypeVector.push_back( cResourceType(
-                                                    name.value() ) );
-            }
-        }
+        // if( inbox.show( name ) )
+        // {
+        //     cResourceType pt;
+        //     int i;
+        //     if( FindResourceType( name.value(), pt, i ))
+        //     {
+        //         nana::msgbox msg("Already have this resource type");
+        //         msg.show();
+        //     }
+        //     else
+        //     {
+        //         myResourceTypeVector.push_back( cResourceType(
+        //                                             name.value() ) );
+        //     }
+        // }
     }
     void NewJob();
 
@@ -187,66 +187,8 @@ public:
 
     void Display();
 
-    bool Schedule( int shifts )
-    {
-        // clear all previous assignments
-        myAssign.clear();
-
-        // loop over shifts
-        for( int kshift = 0; kshift < shifts; kshift++ )
-        {
-            // clear previous shift's assignments
-            for( auto& p : myResourceVector )
-            {
-                p.Assign( false );
-            }
-
-            // the assignments for this shift
-            std::vector< std::pair< cJob, cResource > > shift_assignments;
-
-            // loop over vehicles
-            for( auto& v : myJobVector )
-            {
-                cJobType vt;
-                int i;
-                if( ! FindType( v.Type(), vt, i ) )
-                    throw std::runtime_error("Vehicle type error");
-
-                // loop over people needed by vehicle type
-                for( int kp = 0; kp < vt.Crew(); kp++ )
-                {
-                    bool success = false;
-
-                    // loop over people
-                    for( auto& p : myResourceVector )
-                    {
-                        if( ! p.IsAvailable( kshift, myShiftRotation ) )
-                            continue;
-                        if( p.Type() != vt.CrewType()[kp] )
-                            continue;
-
-                        // assign person to vehicle
-                        shift_assignments.push_back( std::pair< cJob, cResource >( v, p ) );
-                        p.Assign( true, kshift );
-                        success = true;
-                        break;
-                    }
-                    if( ! success )
-                    {
-                        nana::msgbox msg("Not enough people to crew the fleet");
-                        msg.show();
-                        myAssign.clear();
-                        return false;
-                    }
-                }
-            }
-            myAssign.push_back( shift_assignments );
-
-            std::random_shuffle( myResourceVector.begin(), myResourceVector.end() );
-        }
-        return true;
-    }
-
+    bool Schedule( int shifts );
+    
     void JobTerm( const std::string& term )
     {
         myJobTerm = term;
@@ -267,16 +209,8 @@ public:
     {
         myShiftRotation = r;
     }
-    void Test()
-    {
-//        myResourceTypeVector.push_back( cResourceType("officer"));
-//        myResourceTypeVector.push_back( cResourceType("firefighter"));
-//        myTypeVector.push_back( cJobType("rescue",2));
-//        myTypeVector.back().CrewType({"officer","firefighter"});
-//        myJobVector.push_back( cJob("rescue","A"));
-//        myResourceVector.push_back( cResource("Alice","officer"));
-//        myResourceVector.push_back( cResource("Bob","firefighter"));
-    }
+    void Test();
+
 
 private:
 
@@ -288,8 +222,8 @@ private:
     std::vector< cResource > myResourceVector;
     std::vector< cResourceType > myResourceTypeVector;
     std::vector< std::vector< std::pair< cJob, cResource > > > myAssign;
-    nana::form& myfm;
-    nana::textbox fleet_text;
+    wex::gui& myfm;
+    wex::label& fleet_text;
 
     /** Search job types by name
         @param[in] type_name

@@ -1,88 +1,93 @@
 
 #include <iostream>
-#include <nana/gui.hpp>
-#include <nana/gui/widgets/button.hpp>
-#include  <nana/gui/msgbox.hpp>
-#include <nana/gui/widgets/textbox.hpp>
-#include <nana/gui/widgets/menu.hpp>
-#include <nana/gui/widgets/menubar.hpp>
+#include "wex.h"
 
 #include "JobResource.h"
 
 int main()
 {
     // construct application form
-    nana::form fm( nana::rectangle( 100,100, 500, 450 ));
-    fm.caption("Scheduler");
+    wex::gui& fm = wex::maker::make();
+    fm.move(100, 100, 500, 450);
+    fm.text("Scheduler");
 
-    cFleet theFleet( fm );
+    cFleet theFleet(fm);
 
-    //theFleet.Test();
+    theFleet.Test();
 
-    nana::menubar mb( fm );
-    nana::menu& mf = mb.push_back("File");
-    nana::menu& md = mb.push_back("Domain");
+    wex::menubar mb(fm);
+    wex::menu mf(fm);
+    mf.append("Read",
+              [&](const std::string &title)
+              {
+                  std::cout << "read\n";
+                  theFleet.Read();
+              });
+    mf.append("Write", [&](const std::string &title)
+              { theFleet.Write(); });
+    mb.append("File", mf);
 
-    mf.append("Read",[&theFleet](nana::menu::item_proxy& ip)
-    {
-        theFleet.Read();
-    });
-    mf.append("Write",[&theFleet](nana::menu::item_proxy& ip)
-    {
-        theFleet.Write();
-    });
-    md.append("Terms", [fm, &theFleet](nana::menu::item_proxy& ip)
-    {
-        nana::inputbox::text job("Job term ( e.g. vehicle, machine, order, ...", "");
-        nana::inputbox::text resource("Resource term ( e.g. person, ...", "");
-        nana::inputbox inbox(fm,"Problem Domain Terms\n"
-                             "The resources will be assigned to the jobs as needed.");
-        if (inbox.show_modal(job, resource))
-        {
-            theFleet.JobTerm( job.value() );
-            theFleet.ResourceTerm( resource.value() );
-        }
-    });
-//    md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)
-//    {
-//        nana::inputbox::integer rotation("Minimum shifts between assignments", 2, 0, 21, 1 );
-//        nana::inputbox inbox(fm,"Input");
-//        if (inbox.show_modal( rotation ) )
-//        {
-//            theFleet.Rotation( rotation.value() );
-//        }
-//    });
+    wex::menu md(fm);
+    md.append("Terms", [&](const std::string &title)
+              { theFleet.Read(); });
+    mb.append("Domain", md);
 
-    nana::button job_button( fm, nana::rectangle(10, 50, 100, 20));
-    job_button.caption("JOBS");
+    // md.append("Terms", [fm, &theFleet](nana::menu::item_proxy &ip)
+    //           {
+    //     nana::inputbox::text job("Job term ( e.g. vehicle, machine, order, ...", "");
+    //     nana::inputbox::text resource("Resource term ( e.g. person, ...", "");
+    //     nana::inputbox inbox(fm,"Problem Domain Terms\n"
+    //                          "The resources will be assigned to the jobs as needed.");
+    //     if (inbox.show_modal(job, resource))
+    //     {
+    //         theFleet.JobTerm( job.value() );
+    //         theFleet.ResourceTerm( resource.value() );
+    //     } });
+    //    md.append("Rotation",[&fm, &theFleet](nana::menu::item_proxy& ip)
+    //    {
+    //        nana::inputbox::integer rotation("Minimum shifts between assignments", 2, 0, 21, 1 );
+    //        nana::inputbox inbox(fm,"Input");
+    //        if (inbox.show_modal( rotation ) )
+    //        {
+    //            theFleet.Rotation( rotation.value() );
+    //        }
+    //    });
+
+    wex::button &job_button = wex::maker::make<wex::button>(fm);
+    job_button.move(10, 50, 100, 20);
+    job_button.text("JOBS");
     job_button.events().click([&]
-    {
+                              {
         theFleet.JobEditor();
-        theFleet.Display();
-    });
-    nana::button resource_button( fm, nana::rectangle(110, 50, 100, 20));
-    resource_button.caption("RESOURCES");
-    resource_button.events().click([&]
-    {
-        theFleet.ResourceEditor();
-        theFleet.Display();
-    });
-    nana::button constraint_button( fm, nana::rectangle(210, 50, 100, 20));
-    constraint_button.caption("CONSTRAINTS");
-    constraint_button.events().click([&]
-    {
-        theFleet.ConstraintEditor(fm);
-    });
-    nana::button schedule_button( fm, nana::rectangle( 350, 50, 100, 20 ) );
-    schedule_button.caption("SCHEDULE");
-    schedule_button.events().click([&]
-    {
-        theFleet.Schedule( 21 );
-        theFleet.Display( );
-    });
+        theFleet.Display(); });
+
+    wex::button &resource_button = wex::maker::make<wex::button>(fm);
+    resource_button.move(110, 50, 100, 20);
+    resource_button.text("RESOURCES");
+
+    // resource_button.events().click([&]
+    //                                {
+    //     theFleet.ResourceEditor();
+    //     theFleet.Display(); });
+
+    wex::button &constraint_button = wex::maker::make<wex::button>(fm);
+    constraint_button.move(210, 50, 100, 20);
+    constraint_button.text("CONSTRAINTS");
+
+    // constraint_button.events().click([&]
+    //                                  { theFleet.ConstraintEditor(fm); });
+
+    wex::button &schedule_button = wex::maker::make<wex::button>(fm);
+    schedule_button.move(350, 50, 100, 20);
+    schedule_button.text("SCHEDULE");
+    schedule_button.events().click(
+        [&]
+        {
+            theFleet.Schedule(1);
+            theFleet.Display();
+        });
 
     // show & run
     fm.show();
-    nana::exec();
-
+    fm.run();
 }
