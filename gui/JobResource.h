@@ -74,33 +74,31 @@ private:
     std::string myName;
 };
 
-class cResourceType
-{
-public:
-    cResourceType()
-    {
+// class cResourceType
+// {
+// public:
+//     cResourceType()
+//     {
 
-    }
-    cResourceType( const std::string& n )
-        : myName( n )
-    {
+//     }
+//     cResourceType( const std::string& n )
+//         : myName( n )
+//     {
 
-    }
-    std::string Name()
-    {
-        return myName;
-    }
-private:
-    std::string myName;
-};
+//     }
+//     std::string Name()
+//     {
+//         return myName;
+//     }
+// private:
+//     std::string myName;
+// };
 
 class cResource
 {
 public:
-    cResource( const std::string& name,
-               const std::string& type )
+    cResource( const std::string& name )
         : myName( name )
-        , myType( type )
         , myfAssign( false )
         , myLastShift( -10 )
     {
@@ -114,18 +112,6 @@ public:
     {
         myName = n;
     }
-    std::string Type()
-    {
-        return myType;
-    }
-    void Type( const std::string& t )
-    {
-        myType = t;
-    }
-    std::string Text()
-    {
-        return myType + " " + myName;
-    }
 
     void Assign( bool f, int shift = -1 );
 
@@ -138,15 +124,28 @@ public:
         return myLastShift;
     }
 
+    /// @brief Add an ability
+    /// @param a name of ability
+    void Ability( const std::string& a )
+    {
+        myAbility.push_back( a );
+    }
+    /// @brief check for ability
+    /// @param a name of ability
+    /// @return true if resource has ability
+    bool hasAbility( const std::string& a );
+
     /** True if available for a shift
         @param[in] shift for potential assignment to
         @param[in] rotation minimum number of shifts between assignments + 1
     */
     bool IsAvailable( int shift, int rotation ) const;
 
+    void Display( std::stringstream& ss);
+
 private:
     std::string myName;
-    std::string myType;
+    std::vector<std::string> myAbility;
     bool myfAssign;
     int myLastShift;
 };
@@ -230,7 +229,7 @@ private:
     std::vector< cJob > myJobVector;
     std::vector< cJobType > myJobTypeVector;
     std::vector< cResource > myResourceVector;
-    std::vector< cResourceType > myResourceTypeVector;
+    //std::vector< cResourceType > myResourceTypeVector;
     std::vector< std::vector< std::pair< cJob, cResource > > > myAssign;
 
 
@@ -243,11 +242,6 @@ private:
     bool FindType(
         const std::string& type_name,
         cJobType& type,
-        int& index );
-
-    bool FindResourceType(
-        const std::string& name,
-        cResourceType& type,
         int& index );
 
     bool FindPerson( const std::string& type )

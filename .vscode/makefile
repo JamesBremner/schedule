@@ -48,3 +48,5 @@ starter: $(OBJ_schedule)
 clean:
 	del /q .vscode\\obj\\*.o
 
+rebuild: clean starter
+

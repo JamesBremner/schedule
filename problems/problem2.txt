@@ -6,6 +6,7 @@ r Eric canUseDrill
 r Fiona canUseDigger
 r George canUseDrill
 r Hal canUseDigger
+r Jack canUseDrill canUseDigger
 r gw1
 r gw2
 r gw3

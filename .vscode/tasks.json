@@ -5,36 +5,33 @@
     "tasks": [
         {
             "label": "starter",
-            "options": {
-                "cwd": "${workspaceFolder}"
-               },
+            "options": {                "cwd": "${workspaceFolder}"            },
             "command": "mingw32-make.exe",
-            "args": [
-                "-f",
-                ".vscode/makefile",
-                "starter"
-            ],
-
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "args": [                "-f",                ".vscode/makefile",                "starter"            ],
+            "problemMatcher": [                "$gcc"            ],
+            "group": {                "kind": "build",                "isDefault": true
+            }
+        },
+        {
+            "label": "rebuild",
+            "options": {                "cwd": "${workspaceFolder}"            },
+            "command": "mingw32-make.exe",
+            "args": [                "-f",                ".vscode/makefile","rebuild" ],
+            "problemMatcher": [                "$gcc"            ],
+            "group": {                "kind": "build",                "isDefault": true
             }
         },
         {
             "label": "clean",
             "options": {
                 "cwd": "${workspaceFolder}"
-               },
+            },
             "command": "mingw32-make.exe",
             "args": [
                 "-f",
                 ".vscode/makefile",
                 "clean"
             ],
-
             "problemMatcher": [
                 "$gcc"
             ],
@@ -43,6 +40,5 @@
                 "isDefault": false
             }
         }
-
     ]
 }
