@@ -6,21 +6,33 @@
 
 int main()
 {
+
+    cFleet theFleet;
+
     // construct application form
-    wex::gui& fm = wex::maker::make();
+    wex::gui &fm = wex::maker::make();
     fm.move(100, 100, 500, 450);
     fm.text("Scheduler");
+    wex::label &fleet_text = wex::maker::make<wex::label>(fm);
+    fleet_text.move(10, 100, 750, 800);
+    fleet_text.bgcolor(0xFFFFFF);
+    fleet_text.fontName("Courier");
+    fleet_text.text("");
 
-    cFleet theFleet(fm);
 
-    //theFleet.Test();
+
+    // theFleet.Test();
 
     wex::menubar mb(fm);
     wex::menu mf(fm);
     mf.append("Read",
               [&](const std::string &title)
               {
-                  theFleet.ReadSimpleText();
+                  wex::filebox fb(fm);
+                  auto paths = fb.open();
+                  if (paths.empty())
+                      return;
+                  theFleet.ReadSimpleText(paths);
               });
     mf.append("Write", [&](const std::string &title)
               { theFleet.Write(); });
@@ -83,7 +95,9 @@ int main()
         [&]
         {
             theFleet.Schedule(1);
-            theFleet.Display();
+
+            fleet_text.text(theFleet.Display());
+            fleet_text.update();
         });
 
     // show & run

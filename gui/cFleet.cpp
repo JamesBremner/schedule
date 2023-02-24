@@ -4,14 +4,7 @@
 #include <iomanip>
 #include <vector>
 
-#include <wex.h>
-
-// #include <nana/gui.hpp>
-// #include <nana/gui/widgets/textbox.hpp>
-// #include <nana/gui/filebox.hpp>
-// #include <nana/gui/widgets/button.hpp>
-// #include  <nana/gui/widgets/combox.hpp>
-// #include <nana/gui/widgets/label.hpp>
+#include "wex.h"
 
 #include "JobResource.h"
 
@@ -19,118 +12,115 @@
 
 // #define INSTRUMENT 1
 
-cFleet::cFleet(wex::gui &fm)
-    : myJobTerm("Site"), myResourceTerm("Resource"), myfm(fm), myShiftRotation(3), fleet_text(wex::maker::make<wex::label>(fm))
+cFleet::cFleet()
+    : myJobTerm("Site"), myResourceTerm("Resource"), myShiftRotation(3)
 
 {
-    fleet_text.move(10, 100, 750, 800);
-    fleet_text.bgcolor(0xFFFFFF);
-    fleet_text.fontName("Courier");
-    fleet_text.text("");
+
 }
 
 void cFleet::Write()
 {
-    wex::filebox fb(myfm);
-    auto paths = fb.open();
-    if (paths.empty())
-        return;
+    // wex::filebox fb(myfm);
+    // auto paths = fb.open();
+    // if (paths.empty())
+    //     return;
 
-    raven::sqlite::cDB DB(paths.c_str());
-    DB.Query("CREATE TABLE domain ( job, resource );");
-    DB.Query("DELETE FROM domain;");
-    DB.Query("INSERT INTO domain VALUES ( '%s', '%s' );",
-             myJobTerm.c_str(), myResourceTerm.c_str());
-    DB.Query("CREATE TABLE job_type ( name );");
-    DB.Query("DELETE FROM job_type;");
-    DB.Query("CREATE TABLE job_resource ( type, resource );");
-    DB.Query("DELETE FROM job_resource;");
-    int jti = 0;
-    for (auto &jt : myJobTypeVector)
-    {
-        DB.Query("INSERT INTO job_type VALUES ( '%s' );",
-                 jt.Name().c_str());
-        for (auto &jr : jt.CrewType())
-        {
-            if (jr.length())
-                DB.Query("INSERT INTO job_resource VALUES ( %d, '%s' );",
-                         jti, jr.c_str());
-        }
-        jti++;
-    }
-    DB.Query("CREATE TABLE resource_type ( name );");
-    DB.Query("DELETE FROM resource_type;");
-    for (auto &rt : myResourceTypeVector)
-    {
-        DB.Query("INSERT INTO resource_type VALUES ( '%s' );",
-                 rt.Name().c_str());
-    }
-    DB.Query("CREATE TABLE job ( name, type );");
-    DB.Query("DELETE FROM job;");
-    for (auto &j : myJobVector)
-    {
-        DB.Query("INSERT INTO job VALUES ( '%s', '%s' );",
-                 j.Name().c_str(), j.Type().c_str());
-    }
-    DB.Query("CREATE TABLE resource ( name, type );");
-    DB.Query("DELETE FROM resource;");
-    for (auto &r : myResourceVector)
-    {
-        DB.Query("INSERT INTO resource VALUES ( '%s', '%s' );",
-                 r.Name().c_str(), r.Type().c_str());
-    }
+    // raven::sqlite::cDB DB(paths.c_str());
+    // DB.Query("CREATE TABLE domain ( job, resource );");
+    // DB.Query("DELETE FROM domain;");
+    // DB.Query("INSERT INTO domain VALUES ( '%s', '%s' );",
+    //          myJobTerm.c_str(), myResourceTerm.c_str());
+    // DB.Query("CREATE TABLE job_type ( name );");
+    // DB.Query("DELETE FROM job_type;");
+    // DB.Query("CREATE TABLE job_resource ( type, resource );");
+    // DB.Query("DELETE FROM job_resource;");
+    // int jti = 0;
+    // for (auto &jt : myJobTypeVector)
+    // {
+    //     DB.Query("INSERT INTO job_type VALUES ( '%s' );",
+    //              jt.Name().c_str());
+    //     for (auto &jr : jt.CrewType())
+    //     {
+    //         if (jr.length())
+    //             DB.Query("INSERT INTO job_resource VALUES ( %d, '%s' );",
+    //                      jti, jr.c_str());
+    //     }
+    //     jti++;
+    // }
+    // DB.Query("CREATE TABLE resource_type ( name );");
+    // DB.Query("DELETE FROM resource_type;");
+    // for (auto &rt : myResourceTypeVector)
+    // {
+    //     DB.Query("INSERT INTO resource_type VALUES ( '%s' );",
+    //              rt.Name().c_str());
+    // }
+    // DB.Query("CREATE TABLE job ( name, type );");
+    // DB.Query("DELETE FROM job;");
+    // for (auto &j : myJobVector)
+    // {
+    //     DB.Query("INSERT INTO job VALUES ( '%s', '%s' );",
+    //              j.Name().c_str(), j.Type().c_str());
+    // }
+    // DB.Query("CREATE TABLE resource ( name, type );");
+    // DB.Query("DELETE FROM resource;");
+    // for (auto &r : myResourceVector)
+    // {
+    //     DB.Query("INSERT INTO resource VALUES ( '%s', '%s' );",
+    //              r.Name().c_str(), r.Type().c_str());
+    // }
 }
 
 void cFleet::Read()
 {
 
-    wex::filebox fb(myfm);
-    auto paths = fb.open();
-    if (paths.empty())
-        return;
+    // wex::filebox fb(myfm);
+    // auto paths = fb.open();
+    // if (paths.empty())
+    //     return;
 
-    raven::sqlite::cDB DB(paths.c_str());
-    int ret = DB.Query("SELECT * FROM domain;");
-    if (ret != 1)
-        return;
-    myJobTerm = DB.myResultA[0];
-    myResourceTerm = DB.myResultA[1];
+    // raven::sqlite::cDB DB(paths.c_str());
+    // int ret = DB.Query("SELECT * FROM domain;");
+    // if (ret != 1)
+    //     return;
+    // myJobTerm = DB.myResultA[0];
+    // myResourceTerm = DB.myResultA[1];
 
-    myJobTypeVector.clear();
-    ret = DB.Query("SELECT * FROM job_type;");
-    std::vector<std::string> jtv = DB.myResultA;
-    int jti = 0;
-    for (auto &n : jtv)
-    {
-        DB.Query("SELECT resource FROM job_resource WHERE type = %d",
-                 jti++);
-        cJobType jt(n, DB.myResultA.size());
-        jt.CrewType(DB.myResultA);
-        myJobTypeVector.push_back(jt);
-    }
+    // myJobTypeVector.clear();
+    // ret = DB.Query("SELECT * FROM job_type;");
+    // std::vector<std::string> jtv = DB.myResultA;
+    // int jti = 0;
+    // for (auto &n : jtv)
+    // {
+    //     DB.Query("SELECT resource FROM job_resource WHERE type = %d",
+    //              jti++);
+    //     cJobType jt(n, DB.myResultA.size());
+    //     jt.CrewType(DB.myResultA);
+    //     myJobTypeVector.push_back(jt);
+    // }
 
-    myJobVector.clear();
-    ret = DB.Query("SELECT * FROM job;");
-    for (int kj = 0; kj < ret; kj++)
-    {
-        myJobVector.push_back(cJob(DB.myResultA[kj * 2], DB.myResultA[kj * 2 + 1]));
-    }
+    // myJobVector.clear();
+    // ret = DB.Query("SELECT * FROM job;");
+    // for (int kj = 0; kj < ret; kj++)
+    // {
+    //     myJobVector.push_back(cJob(DB.myResultA[kj * 2], DB.myResultA[kj * 2 + 1]));
+    // }
 
-    myResourceVector.clear();
-    ret = DB.Query("SELECT * FROM resource;");
-    for (int kr = 0; kr < ret; kr++)
-    {
-        myResourceVector.push_back(cResource(DB.myResultA[kr * 2], DB.myResultA[kr * 2 + 1]));
-    }
+    // myResourceVector.clear();
+    // ret = DB.Query("SELECT * FROM resource;");
+    // for (int kr = 0; kr < ret; kr++)
+    // {
+    //     myResourceVector.push_back(cResource(DB.myResultA[kr * 2], DB.myResultA[kr * 2 + 1]));
+    // }
 
-    myResourceTypeVector.clear();
-    ret = DB.Query("SELECT * FROM resource_type;");
-    for (int kr = 0; kr < ret; kr++)
-    {
-        myResourceTypeVector.push_back(cResourceType(DB.myResultA[kr]));
-    }
+    // myResourceTypeVector.clear();
+    // ret = DB.Query("SELECT * FROM resource_type;");
+    // for (int kr = 0; kr < ret; kr++)
+    // {
+    //     myResourceTypeVector.push_back(cResourceType(DB.myResultA[kr]));
+    // }
 
-    Display();
+    // Display();
 }
 
 void cFleet::JobEditor()
@@ -462,19 +452,15 @@ static std::vector<std::string> tokenize(const std::string &line)
     return ret;
 }
 
-void cFleet::ReadSimpleText()
+void cFleet::ReadSimpleText(const std::string& path)
 {
-    wex::filebox fb(myfm);
-    auto paths = fb.open();
-    if (paths.empty())
-        return;
 
     myResourceTypeVector.clear();
     myResourceVector.clear();
     myJobTypeVector.clear();
     myJobVector.clear();
 
-    std::ifstream ifs(paths);
+    std::ifstream ifs(path);
     if (!ifs.is_open())
         throw std::runtime_error(
             "Cannot open file");
@@ -618,7 +604,7 @@ bool cFleet::Schedule(int shifts)
     return true;
 }
 
-void cFleet::Display()
+std::string cFleet::Display()
 {
     std::stringstream ss;
 
@@ -682,9 +668,8 @@ void cFleet::Display()
         }
         ss << "\n";
     }
+    return ss.str();
 
-    fleet_text.text(ss.str());
-    fleet_text.update();
 }
 
 void cResource::Assign(bool f, int shift)

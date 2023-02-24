@@ -154,9 +154,9 @@ private:
 class cFleet
 {
 public:
-    cFleet( wex::gui& fm );
+    cFleet( );
     void Read();
-    void ReadSimpleText();
+    void ReadSimpleText(const std::string& path);
     void Write();
 
     void ResourceEditor();
@@ -195,7 +195,7 @@ public:
 
     void NewResource();
 
-    void Display();
+    std::string Display();
 
     bool Schedule( int shifts );
     
@@ -232,8 +232,7 @@ private:
     std::vector< cResource > myResourceVector;
     std::vector< cResourceType > myResourceTypeVector;
     std::vector< std::vector< std::pair< cJob, cResource > > > myAssign;
-    wex::gui& myfm;
-    wex::label& fleet_text;
+
 
     /** Search job types by name
         @param[in] type_name
