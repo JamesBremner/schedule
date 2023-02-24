@@ -122,42 +122,42 @@ void PilotPrompt()
 
 void FilePrompt()
 {
-    cout << "Enter file path\n>";
-    string path;
-    cin >> path;
+    // cout << "Enter file path\n>";
+    // string path;
+    // cin >> path;
 
-    ifstream ifs( path );
-    if( ! ifs )
-    {
-        cout << "Cannot open file \"" << path << "\"\n";
-        return;
-    }
+    // ifstream ifs( path );
+    // if( ! ifs )
+    // {
+    //     cout << "Cannot open file \"" << path << "\"\n";
+    //     return;
+    // }
 
-    nlohmann::json j;
-    ifs >> j;
-    for( auto& jf : j["farms"] )
-    {
-        cFarm f;
-        f.myName = jf["name"];
+    // nlohmann::json j;
+    // ifs >> j;
+    // for( auto& jf : j["farms"] )
+    // {
+    //     cFarm f;
+    //     f.myName = jf["name"];
 
-        int year, month, day;
-        year = atoi( jf["seed"].get<std::string>().substr(0,4).c_str());
-        month = atoi( jf["seed"].get<std::string>().substr(6,2).c_str());
-        day = atoi( jf["seed"].get<std::string>().substr(9,2).c_str());
-        raven::sch::date_t tp = raven::sch::fTime( year, month, day );
-        for( int jd : jf["days"] )
-        {
-            f.vDate.push_back( tp + chrono::hours{jd*24} );
-        }
-        vFarm.push_back( f );
-    }
-    for( auto& jp : j["pilots"])
-    {
-        cPilot p;
-        p.myName = jp["name"];
-        vPilot.push_back(p);
+    //     int year, month, day;
+    //     year = atoi( jf["seed"].get<std::string>().substr(0,4).c_str());
+    //     month = atoi( jf["seed"].get<std::string>().substr(6,2).c_str());
+    //     day = atoi( jf["seed"].get<std::string>().substr(9,2).c_str());
+    //     raven::sch::date_t tp = raven::sch::fTime( year, month, day );
+    //     for( int jd : jf["days"] )
+    //     {
+    //         f.vDate.push_back( tp + chrono::hours{jd*24} );
+    //     }
+    //     vFarm.push_back( f );
+    // }
+    // for( auto& jp : j["pilots"])
+    // {
+    //     cPilot p;
+    //     p.myName = jp["name"];
+    //     vPilot.push_back(p);
 
-    }
+    // }
 
 }
 

@@ -3,7 +3,7 @@ VPATH = ./src ../raven-set ../sqlite
 
 
 # compiler include search paths
-INCS = -I./include \
+INCS = -I./src/ext \
 	-I../windex/include \
 	-I../raven-set \
 	-I../../code_ext/boost/boost1_78
@@ -30,6 +30,11 @@ OBJ_assign = \
 	$(ODIR)/cFleet.o \
 	$(ODIR)/raven_sqlite.o $(ODIR)/sqlite3.o
 
+OBJ_cropduster = \
+	$(ODIR)/cropduster.o \
+	$(ODIR)/cSchedule.o \
+	$(ODIR)/cShop.o 
+
 ### COMPILE
 
 $(ODIR)/sqlite3.o: sqlite3.c
@@ -42,6 +47,11 @@ $(ODIR)/%.o: %.cpp  JobResource.h
 assign: $(OBJ_assign)
 	g++ $(OPT) \
 	-o bin/assign.exe $^  \
+	$(static_link_flags) $(LIBS)
+
+cropduster: $(OBJ_cropduster)
+	g++ $(OPT) \
+	-o bin/cropduster.exe $^  \
 	$(static_link_flags) $(LIBS)
 
 .PHONY: clean
