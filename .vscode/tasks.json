@@ -4,10 +4,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "starter",
+            "label": "assign",
             "options": {                "cwd": "${workspaceFolder}"            },
             "command": "mingw32-make.exe",
-            "args": [                "-f",                ".vscode/makefile",                "starter"            ],
+            "args": ["-f", ".vscode/makefile", "assign" ],
             "problemMatcher": [                "$gcc"            ],
             "group": {                "kind": "build",                "isDefault": true
             }

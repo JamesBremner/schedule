@@ -157,15 +157,15 @@ void cFleet::JobEditor()
     // nana::button done(fm, nana::rectangle(220, 260, 70, 20));
     // done.caption("DONE");
 
-    add_button.events().click([&]
-                              {
-                                  cJob j("Job" + std::to_string(myJobVector.size()), "?");
-                                  myJobVector.push_back(j);
-                                  // cb.push_back( j.Name() );
-                                  // cb.option( myJobVector.size()-1);
-                              });
-    add_type.events().click([this]
-                            { NewJobType(); });
+    // add_button.events().click([&]
+    //                           {
+    //                               cJob j("Job" + std::to_string(myJobVector.size()), "?");
+    //                               myJobVector.push_back(j);
+    //                               // cb.push_back( j.Name() );
+    //                               // cb.option( myJobVector.size()-1);
+    //                           });
+    // add_type.events().click([this]
+    //                         { NewJobType(); });
     // cb.events().selected([&,this](const nana:: arg_combox&arg)
     // {
     //     // clear old selection

@@ -1,5 +1,5 @@
 #source file search paths
-VPATH = ./gui ../raven-set ../sqlite
+VPATH = ./src ../raven-set ../sqlite
 
 
 # compiler include search paths
@@ -25,8 +25,8 @@ OPT = -g
 CCflags = -std=c++17 $(OPT) -D_mingw_
 
 # sources
-OBJ_schedule = \
-	$(ODIR)/FleetCrewGUI.o \
+OBJ_assign = \
+	$(ODIR)/Assign.o \
 	$(ODIR)/cFleet.o \
 	$(ODIR)/raven_sqlite.o $(ODIR)/sqlite3.o
 
@@ -39,14 +39,14 @@ $(ODIR)/%.o: %.cpp  JobResource.h
 	g++  $(CCflags) \
 	-c -o $@ $< $(INCS)
 
-starter: $(OBJ_schedule)
+assign: $(OBJ_assign)
 	g++ $(OPT) \
-	-o bin/schedule.exe $^  \
+	-o bin/assign.exe $^  \
 	$(static_link_flags) $(LIBS)
 
 .PHONY: clean
 clean:
 	del /q .vscode\\obj\\*.o
 
-rebuild: clean starter
+rebuild: clean assign
 
