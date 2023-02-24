@@ -12,8 +12,10 @@
 
 // #define INSTRUMENT 1
 
-cFleet::cFleet()
-    : myJobTerm("Site"), myResourceTerm("Resource"), myShiftRotation(3)
+cFleet::cFleet() : myJobTerm("Site"),
+                   myResourceTerm("Resource"),
+                   myShiftRotation(3),
+                   myShiftCount(1)
 
 {
 }
@@ -68,58 +70,6 @@ void cFleet::Write()
     //     DB.Query("INSERT INTO resource VALUES ( '%s', '%s' );",
     //              r.Name().c_str(), r.Type().c_str());
     // }
-}
-
-void cFleet::Read()
-{
-
-    // wex::filebox fb(myfm);
-    // auto paths = fb.open();
-    // if (paths.empty())
-    //     return;
-
-    // raven::sqlite::cDB DB(paths.c_str());
-    // int ret = DB.Query("SELECT * FROM domain;");
-    // if (ret != 1)
-    //     return;
-    // myJobTerm = DB.myResultA[0];
-    // myResourceTerm = DB.myResultA[1];
-
-    // myJobTypeVector.clear();
-    // ret = DB.Query("SELECT * FROM job_type;");
-    // std::vector<std::string> jtv = DB.myResultA;
-    // int jti = 0;
-    // for (auto &n : jtv)
-    // {
-    //     DB.Query("SELECT resource FROM job_resource WHERE type = %d",
-    //              jti++);
-    //     cJobType jt(n, DB.myResultA.size());
-    //     jt.CrewType(DB.myResultA);
-    //     myJobTypeVector.push_back(jt);
-    // }
-
-    // myJobVector.clear();
-    // ret = DB.Query("SELECT * FROM job;");
-    // for (int kj = 0; kj < ret; kj++)
-    // {
-    //     myJobVector.push_back(cJob(DB.myResultA[kj * 2], DB.myResultA[kj * 2 + 1]));
-    // }
-
-    // myResourceVector.clear();
-    // ret = DB.Query("SELECT * FROM resource;");
-    // for (int kr = 0; kr < ret; kr++)
-    // {
-    //     myResourceVector.push_back(cResource(DB.myResultA[kr * 2], DB.myResultA[kr * 2 + 1]));
-    // }
-
-    // myResourceTypeVector.clear();
-    // ret = DB.Query("SELECT * FROM resource_type;");
-    // for (int kr = 0; kr < ret; kr++)
-    // {
-    //     myResourceTypeVector.push_back(cResourceType(DB.myResultA[kr]));
-    // }
-
-    // Display();
 }
 
 void cFleet::JobEditor()
@@ -372,7 +322,7 @@ static std::vector<std::string> tokenize(const std::string &line)
     return ret;
 }
 
-void cFleet::ReadSimpleText(const std::string &path)
+void cFleet::Read(const std::string &path)
 {
 
     myResourceVector.clear();
@@ -388,6 +338,10 @@ void cFleet::ReadSimpleText(const std::string &path)
     while (getline(ifs, line))
     {
         auto tokens = tokenize(line);
+        if (tokens[0] == "s")
+        {
+            myShiftCount = atoi(tokens[1].c_str());
+        }
         if (tokens[0] == "r")
         {
             cResource res(tokens[1]);
@@ -406,13 +360,13 @@ void cFleet::ReadSimpleText(const std::string &path)
     }
 }
 
-bool cFleet::Schedule(int shifts)
+bool cFleet::Schedule()
 {
     // clear all previous assignments
     myAssign.clear();
 
     // loop over shifts
-    for (int kshift = 0; kshift < shifts; kshift++)
+    for (int kshift = 0; kshift < myShiftCount; kshift++)
     {
         // clear previous shift's assignments
         for (auto &p : myResourceVector)
@@ -536,7 +490,7 @@ std::string cFleet::Display()
        << std::to_string(myResourceVector.size()) << " " << myResourceTerm << ":\n";
     for (auto &p : myResourceVector)
     {
-       p.Display(ss);
+        p.Display(ss);
     }
 
     ss << "\nShift";
@@ -570,7 +524,7 @@ std::string cFleet::Display()
             }
             if (!assigned)
             {
-                ss << "..." << sep;
+                ss << std::setw(6) << "..." << sep;
             }
         }
         ss << "\n";
@@ -585,8 +539,9 @@ bool cResource::hasAbility(const std::string &a)
 }
 void cResource::Display(std::stringstream &ss)
 {
-    ss << myName << " can " << " ";
-    for( auto& a : myAbility )
+    ss << myName << " can "
+       << " ";
+    for (auto &a : myAbility)
         ss << a << " ";
     ss << "\n";
 }

@@ -30,7 +30,7 @@ int main()
                   auto paths = fb.open();
                   if (paths.empty())
                       return;
-                  theFleet.ReadSimpleText(paths);
+                  theFleet.Read(paths);
               });
     mf.append("Write", [&](const std::string &title)
               { theFleet.Write(); });
@@ -41,9 +41,9 @@ int main()
                   auto paths = fb.open();
                   if (paths.empty())
                       return;
-                  theFleet.ReadSimpleText(paths);
+                  theFleet.Read(paths);
 
-                  theFleet.Schedule(1);
+                  theFleet.Schedule();
 
                   fleet_text.text(theFleet.Display());
                   fleet_text.update();

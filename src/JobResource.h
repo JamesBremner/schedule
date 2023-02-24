@@ -154,8 +154,7 @@ class cFleet
 {
 public:
     cFleet( );
-    void Read();
-    void ReadSimpleText(const std::string& path);
+    void Read(const std::string& path);
     void Write();
 
     void ResourceEditor();
@@ -196,7 +195,7 @@ public:
 
     std::string Display();
 
-    bool Schedule( int shifts );
+    bool Schedule( );
     
     void JobTerm( const std::string& term )
     {
@@ -226,10 +225,10 @@ private:
     std::string myJobTerm;
     std::string myResourceTerm;
     int myShiftRotation;
+    int myShiftCount;
     std::vector< cJob > myJobVector;
     std::vector< cJobType > myJobTypeVector;
     std::vector< cResource > myResourceVector;
-    //std::vector< cResourceType > myResourceTypeVector;
     std::vector< std::vector< std::pair< cJob, cResource > > > myAssign;
 
 
