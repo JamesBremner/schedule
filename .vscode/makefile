@@ -35,6 +35,11 @@ OBJ_cropduster = \
 	$(ODIR)/cSchedule.o \
 	$(ODIR)/cShop.o 
 
+OBJ_manufacture = \
+	$(ODIR)/manufacture.o \
+	$(ODIR)/cSchedule.o \
+	$(ODIR)/cShop.o 
+
 ### COMPILE
 
 $(ODIR)/sqlite3.o: sqlite3.c
@@ -54,9 +59,14 @@ cropduster: $(OBJ_cropduster)
 	-o bin/cropduster.exe $^  \
 	$(static_link_flags) $(LIBS)
 
+manufacture: $(OBJ_manufacture)
+	g++ $(OPT) \
+	-o bin/manufacture.exe $^  \
+	$(static_link_flags) $(LIBS)
+
 .PHONY: clean
 clean:
 	del /q .vscode\\obj\\*.o
 
-rebuild: clean assign
+rebuild: clean assign manufacture
 

@@ -102,6 +102,8 @@ public:
         return myMachine.find( name )->second;
     }
 
+    std::string  display();
+
     map < string, cMachine >::iterator begin()
     {
         return myMachine.begin();
@@ -114,6 +116,7 @@ public:
 private:
     map < string, cMachine > myMachine;
     bool myfHungarian;                      // true if Hungarian algorithm may be used
+    float myCostManufacturing;
 
     cMachine& findFirstFree();
     map<string,cMachine>::iterator findCheapestReady(  cJob& job );

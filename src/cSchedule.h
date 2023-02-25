@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <set>
 
 #include "nlohmann_json.hpp"
 
@@ -18,7 +19,7 @@ date_t fTime( int year, int month, int day );
 
 
 
-/** A single processing step: the time a job spends on a nachine */
+/** A single processing step: the time a job spends on a machine */
 class cStep
 {
 public:
@@ -164,11 +165,13 @@ public:
         return myStart < other.myStart;
     }
 
-    void Print()
+    void display( std::stringstream& ss ) const
     {
-        cout << myMachine << " ";
-    }
+        std::time_t tt = std::chrono::system_clock::to_time_t(myStart);
 
+        ss << myName <<" " << myMachine << " " << ctime(&tt) <<  "\n";
+        
+    }
 
 
 private:
@@ -261,7 +264,7 @@ public:
     /** True if job type is anyone and one of the steps has been assigned to a machine */
     bool IsAnyoneAssigned();
 
-    eType Type()
+    eType Type() const
     {
         return myType;
     }
@@ -296,7 +299,7 @@ class cSchedule
 public:
 
     /** Add job to schedule */
-    void Add( cJob& job );
+    void Add( const cJob& job );
 
     /** Schedule in JSON format */
     nlohmann::json json();
@@ -335,7 +338,7 @@ public:
         are assigned to jobs.  For these, each job has many steps,
         one for each possible machine, and in the result, just one step
         in each job is assigned to a machine.  So, it is convenient
-        to have a list of the steap that have been assigned
+        to have a list of the steps that have been assigned
     */
 
     void Assignments( multiset< cStep >& assigns );
@@ -343,7 +346,9 @@ public:
     /** Job start times in chronological order */
     set< date_t > JobStartTimes();
 
-    /** iterator pointin to fist jon */
+    std::string display();
+
+    /** iterator pointing to fist job */
     vector< cJob >::iterator begin()
     {
         return myJob.begin();

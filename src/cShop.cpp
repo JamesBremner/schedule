@@ -56,6 +56,8 @@ cShop::cShop( cSchedule& S )
 
 float cShop::Manufacture( cSchedule& S )
 {
+    myCostManufacturing = 0;
+
     switch( S.Type() )
     {
     case cJob::eType::sequential:
@@ -81,6 +83,10 @@ float cShop::Manufacture( cSchedule& S )
 
 void cShop::ManufactureAnyone( cSchedule& S )
 {
+    if( ! myMachine.size() )
+        throw std::runtime_error(
+            "cShop::ManufactureAnyone No machines constructed"        );
+
     // for each start time
     for( auto startTime : S.JobStartTimes() )
     {
@@ -100,6 +106,7 @@ void cShop::ManufactureAnyone( cSchedule& S )
                 // assign cheapest ready machine
 
                 machine->second.Assign( job );
+                myCostManufacturing += job.Steps()[0].Cost();
             }
             else
             {
@@ -110,7 +117,13 @@ void cShop::ManufactureAnyone( cSchedule& S )
             }
         }
     }
+}
 
+std::string  cShop::display()
+{
+    std::stringstream ss;
+    ss << "Manufacturing cost " << myCostManufacturing << "\n";
+    return ss.str();
 }
 map<string,cMachine>::iterator
 cShop::findCheapestReady(  cJob& job )
@@ -343,10 +356,6 @@ public:
             vector< cStep > vNew;
             job.AddSteps( vStep );
 
-            for( auto& s : vStep )
-                s.Print();
-            cout << "\n";
-
             for( auto machine_map_it : myShop )
             {
                 cMachine& machine = machine_map_it.second;
@@ -368,9 +377,6 @@ public:
                     vNew.push_back( *sit );
                 }
             }
-            for( auto& s : vNew )
-                s.Print();
-            cout << "\n";
             job.SetSteps( vNew );
         }
     }

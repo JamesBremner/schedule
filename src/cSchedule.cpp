@@ -189,6 +189,16 @@ void cSchedule::Assignments( multiset< cStep >& assigns )
     }
 }
 
+    std::string cSchedule::display()
+    {
+        std::stringstream ss;
+        multiset< cStep > ms;
+        Assignments( ms );
+        for( auto& step : ms )
+            step.display(ss);
+        return ss.str();
+    }
+
 cStep& cJob::FindStep( int id )
 {
     for( auto& s : myStep )
@@ -226,7 +236,7 @@ bool cJob::IsAnyoneAssigned()
     return false;
 }
 
-void cSchedule::Add( cJob& job )
+void cSchedule::Add( const cJob& job )
 {
     // check that all jobs have the same type
     if( myJob.size() )

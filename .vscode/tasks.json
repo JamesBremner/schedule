@@ -22,6 +22,15 @@
             }
         },
         {
+            "label": "shopper",
+            "options": {                "cwd": "${workspaceFolder}"            },
+            "command": "mingw32-make.exe",
+            "args": ["-f", ".vscode/makefile", "shopper" ],
+            "problemMatcher": [                "$gcc"            ],
+            "group": {                "kind": "build",                "isDefault": true
+            }
+        },
+        {
             "label": "rebuild",
             "options": {                "cwd": "${workspaceFolder}"            },
             "command": "mingw32-make.exe",
