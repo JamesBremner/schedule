@@ -40,6 +40,9 @@ OBJ_manufacture = \
 	$(ODIR)/cSchedule.o \
 	$(ODIR)/cShop.o 
 
+OBJ_jobstage = \
+	$(ODIR)/cJobStage.o
+
 ### COMPILE
 
 $(ODIR)/sqlite3.o: sqlite3.c
@@ -62,6 +65,11 @@ cropduster: $(OBJ_cropduster)
 manufacture: $(OBJ_manufacture)
 	g++ $(OPT) \
 	-o bin/manufacture.exe $^  \
+	$(static_link_flags) $(LIBS)
+
+jobstage: $(OBJ_jobstage)
+	g++ $(OPT) \
+	-o bin/jobstage.exe $^  \
 	$(static_link_flags) $(LIBS)
 
 .PHONY: clean
